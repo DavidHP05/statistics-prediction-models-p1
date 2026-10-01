@@ -22,3 +22,11 @@ ggplot(datos, aes(x = nota)) +
        x = "Nota",
        y = "Frecuencia") +
   theme_minimal()
+
+#Apartado 3 proporciones de sexo
+
+#Calcular la tabla de frecuencias absolutas
+conteo_sexo <- table(datos$sexo)
+#Calculamos las proporciones
+proporciones <- prop.table(conteo_sexo)
+print(proporciones)
