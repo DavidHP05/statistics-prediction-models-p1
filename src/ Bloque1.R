@@ -1,5 +1,5 @@
 #Ejercicio 1, calcular media, mediana y desviación típica
-datos <- read.csv("students_A.csv")
+datos <- read.csv("data/students_A.csv")
 media       <- mean(datos$nota, na.rm = TRUE)
 mediana     <- median(datos$nota, na.rm = TRUE)
 desv_tipica <- sd(datos$nota, na.rm = TRUE)
@@ -30,3 +30,35 @@ conteo_sexo <- table(datos$sexo)
 #Calculamos las proporciones
 proporciones <- prop.table(conteo_sexo)
 print(proporciones)
+
+
+#Diagrama de cajas según campus
+ggplot(datos, aes(x = campus, y = nota, fill = campus)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de Cajas de Nota según Campus",
+       x = "Campus",
+       y = "Nota") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+#Gráfico de dispersión 
+ggplot(datos, aes(x = horas_estudio, y = nota)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  labs(title = "Gráfico de Dispersión: Horas de Estudio vs Nota",
+       x = "Horas de Estudio",
+       y = "Nota") +
+  theme_minimal()
+
+#Matriz de correlaciones
+#Seleccionamos las variables numéricas
+vars_numericas <- datos[, sapply(datos, is.numeric)]
+
+#Cálculo de la matriz de correlación
+matriz_cor <- round(cor(vars_numericas, use = "complete.obs"), 2)
+print(matriz_cor)
+
+#Hay que ver como ponerlo más bonito
+library(corrplot)
+corrplot(matriz_cor, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
