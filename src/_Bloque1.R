@@ -1,16 +1,21 @@
+
+
 #Ejercicio 1, calcular media, mediana y desviación típica
 datos <- read.csv("data/students_A.csv")
-media       <- mean(datos$nota, na.rm = TRUE)
-mediana     <- median(datos$nota, na.rm = TRUE)
-desv_tipica <- sd(datos$nota, na.rm = TRUE)
+media_nota       <- mean(datos$nota, na.rm = TRUE)
+mediana_nota     <- median(datos$nota, na.rm = TRUE)
+desv_tipica_nota <- sd(datos$nota, na.rm = TRUE)
 
 #Mostramos los datos
-cat("Media:", round(media, 4), "\n")
-cat("Mediana:", round(mediana, 4), "\n")
-cat("Desviación típica:", round(desv_tipica, 4), "\n")
+cat("Media de las notas:", round(media, 4), "\n")
+cat("Mediana de las notas:", round(mediana, 4), "\n")
+cat("Desviación típica de las notas:", round(desv_tipica, 4), "\n")
 #Mera curiosidad
 nota_maxima <- max(datos$nota, na.rm = TRUE)
 print(nota_maxima)
+
+nota_minima <- min(datos$nota, na.rm = TRUE)
+print(nota_minima)
 
 
 #Apartado 2, el histograma
@@ -22,6 +27,11 @@ ggplot(datos, aes(x = nota)) +
        x = "Nota",
        y = "Frecuencia") +
   theme_minimal()
+
+# Problemillas de normalidad. No es del todo simétrica
+
+resultados <- shapiro.test(datos$nota)
+print(resultados)
 
 #Apartado 3 proporciones de sexo
 
@@ -62,3 +72,7 @@ print(matriz_cor)
 library(corrplot)
 corrplot(matriz_cor, method = "color", type = "upper", 
          tl.col = "black", tl.srt = 45, addCoef.col = "black")
+
+
+
+
