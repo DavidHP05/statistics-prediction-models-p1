@@ -1,4 +1,4 @@
-
+#Bloque 1
 
 #Ejercicio 1, calcular media, mediana y desviación típica
 datos <- read.csv("data/students_A.csv")
@@ -7,9 +7,9 @@ mediana_nota     <- median(datos$nota, na.rm = TRUE)
 desv_tipica_nota <- sd(datos$nota, na.rm = TRUE)
 
 #Mostramos los datos
-cat("Media de las notas:", round(media, 4), "\n")
-cat("Mediana de las notas:", round(mediana, 4), "\n")
-cat("Desviación típica de las notas:", round(desv_tipica, 4), "\n")
+cat("Media de las notas:", round(media_nota, 4), "\n")
+cat("Mediana de las notas:", round(mediana_nota, 4), "\n")
+cat("Desviación típica de las notas:", round(desv_tipica_nota, 4), "\n")
 #Mera curiosidad
 nota_maxima <- max(datos$nota, na.rm = TRUE)
 print(nota_maxima)
@@ -72,6 +72,13 @@ print(matriz_cor)
 library(corrplot)
 corrplot(matriz_cor, method = "color", type = "upper", 
          tl.col = "black", tl.srt = 45, addCoef.col = "black")
+
+
+
+#Bloque 2
+library(caret)
+dim(datos)
+head(datos)
 
 
 

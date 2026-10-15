@@ -1,0 +1,205 @@
+---
+title: "Memoria"
+format: html
+editor: visual
+---
+
+```{r}
+#Bloque 1
+
+#Ejercicio 1, calcular media, mediana y desviación típica
+datos <- read.csv("data/students_A.csv")
+media_nota       <- mean(datos$nota, na.rm = TRUE)
+mediana_nota     <- median(datos$nota, na.rm = TRUE)
+desv_tipica_nota <- sd(datos$nota, na.rm = TRUE)
+
+#Mostramos los datos
+cat("Media de las notas:", round(media_nota, 4), "\n")
+cat("Mediana de las notas:", round(mediana_nota, 4), "\n")
+cat("Desviación típica de las notas:", round(desv_tipica_nota, 4), "\n")
+#Mera curiosidad
+nota_maxima <- max(datos$nota, na.rm = TRUE)
+print(nota_maxima)
+
+nota_minima <- min(datos$nota, na.rm = TRUE)
+print(nota_minima)
+
+
+#Apartado 2, el histograma
+
+library(ggplot2)
+ggplot(datos, aes(x = nota)) +
+  geom_histogram(bins = 20, fill = "steelblue", color = "white") +
+  labs(title = "Histograma de Nota",
+       x = "Nota",
+       y = "Frecuencia") +
+  theme_minimal()
+
+# Problemillas de normalidad. No es del todo simétrica
+
+resultados <- shapiro.test(datos$nota)
+print(resultados)
+
+#Apartado 3 proporciones de sexo
+
+#Calcular la tabla de frecuencias absolutas
+conteo_sexo <- table(datos$sexo)
+#Calculamos las proporciones
+proporciones <- prop.table(conteo_sexo)
+print(proporciones)
+
+
+#Diagrama de cajas según campus
+ggplot(datos, aes(x = campus, y = nota, fill = campus)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de Cajas de Nota según Campus",
+       x = "Campus",
+       y = "Nota") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+#Gráfico de dispersión 
+ggplot(datos, aes(x = horas_estudio, y = nota)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  labs(title = "Gráfico de Dispersión: Horas de Estudio vs Nota",
+       x = "Horas de Estudio",
+       y = "Nota") +
+  theme_minimal()
+
+#Matriz de correlaciones
+#Seleccionamos las variables numéricas
+vars_numericas <- datos[, sapply(datos, is.numeric)]
+
+#Cálculo de la matriz de correlación
+matriz_cor <- round(cor(vars_numericas, use = "complete.obs"), 2)
+print(matriz_cor)
+
+#Hay que ver como ponerlo más bonito
+library(corrplot)
+corrplot(matriz_cor, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+```
+
+## Bloque 2
+
+```{r}
+library(caret)
+dim(datos)
+head(datos)
+```
+
+```{r}
+library(dplyr)
+datos_factor <- datos%>%mutate_if(is.character, as.factor)
+
+```
+
+```{r}
+table(datos_factor$sexo, useNA = 'always')
+```
+
+
+Ahora veamos un resumen global de los datos
+
+```{r}
+summary(datos_factor)
+library(summarytools)
+print(dfSummary(datos_factor),method = "render")
+```
+Proporcion 
+```{r}
+# 1. Total de filas (entradas)
+total_filas <- nrow(datos_factor)
+
+# 2. Número de filas con AL MENOS un valor faltante
+filas_con_na <- sum(!complete.cases(datos_factor))
+
+# 3. Proporción
+proporcion <- filas_con_na / total_filas
+
+# Imprimir resultados
+cat("Total de filas:", total_filas, "\n")
+cat("Filas con algún NA:", filas_con_na, "\n")
+cat("Proporción:", proporcion, "\n")
+cat("Porcentaje:", round(proporcion * 100, 2), "%\n")
+```
+Imputaciones
+```{r}
+total_filas_con_na <- sum(!complete.cases(datos))
+print(total_filas_con_na)
+library(dplyr)
+
+# Guarda el vector con los números de fila que contienen algún NA
+posiciones_na <- which(!complete.cases(datos_factor))
+print(posiciones_na)
+datos_factor[posiciones_na, ]
+
+#Podemos aplicar media a todos porque son todas numericas 
+datos_imputados_media <- datos_factor %>%
+  mutate(across(
+    where(is.numeric), # Aplica solo a columnas numéricas
+    ~ ifelse(is.na(.), mean(., na.rm = TRUE), .) # Si es NA, pone la media; si no, deja el dato
+  ))
+datos_imputados_media[posiciones_na,]
+```
+
+```{r}
+library(mice)
+imp <- mice(datos_factor, m = 20, method = "cart", maxit = 10, seed = 123)
+datos_imputados_arbol <- complete(imp, 1)
+datos_imputados_arbol[posiciones_na,]
+```
+Histogramas y gráficos de dispersion
+```{r}
+hist(datos_factor$IQ,
+     main = "Histograma de IQ con NA",
+     xlab = "IQ",
+     ylab = "Frecuencia",
+     col = "steelblue",
+     border = "white")
+hist(datos_imputados_media$IQ,
+     main = "Histograma de IQ con media",
+     xlab = "IQ",
+     ylab = "Frecuencia",
+     col = "steelblue",
+     border = "white")
+hist(datos_imputados_arbol$IQ,
+     main = "Histograma de IQ con arbol",
+     xlab = "IQ",
+     ylab = "Frecuencia",
+     col = "steelblue",
+     border = "white")
+```
+```{r}
+library(naniar)
+mcar_test(datos_factor)
+```
+```{r}
+plot(x = datos_imputados_arbol$uso_redes, 
+     y = datos_imputados_arbol$nota,
+     main = "Gráfico de Dispersión: uso redes vs nota",
+     xlab = "uso redes",
+     ylab = "nota",
+     pch = 19, 
+     col = "darkblue")
+# 1. Creamos un vector de colores por defecto ("darkblue" para todas las filas)
+colores <- rep("darkblue", nrow(datos_imputados_arbol))
+
+# 2. Asignamos el color distinto (por ejemplo, "red") a las filas indicadas en posiciones_na
+colores[posiciones_na] <- "red"
+
+# 3. Generamos el gráfico de dispersión usando el vector de colores
+plot(x = datos_imputados_arbol$uso_redes, 
+     y = datos_imputados_arbol$nota,
+     main = "Gráfico de Dispersión: uso redes vs nota",
+     xlab = "uso redes",
+     ylab = "nota",
+     pch = 19, 
+     col = colores)
+
+# 4. (Opcional) Leyenda para identificar los puntos imputados/faltantes
+
+```
+
+
