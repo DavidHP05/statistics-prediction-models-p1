@@ -1,0 +1,353 @@
+---
+title: "Práctica estudiantes"
+subtitle: "Primera entrega MEP"
+author: "grupo inverosimiles"
+date: today
+date-format: "DD [de] MMMM [de] YYYY"
+lang: es
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-title: "Contenido del informe"
+    toc-depth: 3
+    code-fold: true
+    code-copy: true
+    embed-resources: true
+    number-sections: true
+edito: visual
+---
+
+Lectura de datos y librerias usadas
+
+```{r}
+library(ggplot2)
+library(corrplot)
+library(tidyverse)
+library(summarytools)
+library(dplyr)
+library(DataExplorer)
+datos <- read.csv("data/students_A.csv")
+```
+
+## Bloque 1 : Exploración inicial
+
+El objetivo de este bloque es conocer nuestro conjunto de datos antes de hacer ningún tipo de ajuste
+
+Apartado 1, calcular media, mediana y desviación típica:
+
+```{r}
+media_nota       <- mean(datos$nota, na.rm = TRUE)
+mediana_nota     <- median(datos$nota, na.rm = TRUE)
+desv_tipica_nota <- sd(datos$nota, na.rm = TRUE)
+#Mostramos los datos
+cat("Media de las notas:", round(media_nota, 4), "\n")
+cat("Mediana de las notas:", round(mediana_nota, 4), "\n")
+cat("Desviación típica de las notas:", round(desv_tipica_nota, 4), "\n")
+```
+
+Apartado 2, el histograma de notas
+
+```{r}
+ggplot(datos, aes(x = nota)) +
+  geom_histogram(bins = 20, fill = "steelblue", color = "white") +
+  labs(title = "Histograma de Nota",
+       x = "Nota",
+       y = "Frecuencia") +
+  theme_minimal()
+```
+
+Apartado 3, proporción de estudiantes por sexo
+
+```{r}
+#Calcular la tabla de frecuencias absolutas
+conteo_sexo <- table(datos$sexo)
+#Calculamos las proporciones
+proporciones <- prop.table(conteo_sexo)
+print(proporciones)
+```
+
+Apartado 4, diagrama de cajas se notas según el campus
+
+```{r}
+ggplot(datos, aes(x = campus, y = nota, fill = campus)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de Cajas de Nota según Campus",
+       x = "Campus",
+       y = "Nota") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Apartado 5, grafico de dispersión entre horas_studio y nota
+
+```{r}
+ggplot(datos, aes(x = horas_estudio, y = nota)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  labs(title = "Gráfico de Dispersión: Horas de Estudio vs Nota",
+       x = "Horas de Estudio",
+       y = "Nota") +
+  theme_minimal()
+```
+
+Apartado 6, matriz de correlaciones entre las variables numéricas
+
+```{r}
+#Seleccionamos las variables numéricas
+vars_numericas <- datos[, sapply(datos, is.numeric)]
+
+#Cálculo de la matriz de correlación
+matriz_cor <- round(cor(vars_numericas, use = "complete.obs"), 2)
+print(matriz_cor)
+
+#Hay que ver como ponerlo más bonito
+corrplot(matriz_cor, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+```
+
+##### Bloque 1 extras
+
+El histograma del apartado 2, aunque puede aparentar ser normal, al estar un pelín desplazado a la derecha, nos han surgido dudas de si realmente lo será o no. Por ello hemos decidido hacer un shapiro test para confirmarlo, tras el cual confirmamos que siguen una distribución normal.
+
+```{r}
+resultados <- shapiro.test(datos$nota)
+print(resultados)
+```
+
+A continuación continuamos con la exploración
+
+```{r}
+glimpse(datos)#Nos aseguramos de nuestro tipo de variable y vemos las dimensiones
+```
+
+Vemos que tenemos varias que son de tipo character, para asegurarnos que no tenemos problema, las vamos a pasar a factor para que funcionen bien esas variables categóricas.
+
+```{r}
+datos_factor <- datos%>%mutate_if(is.character, as.factor)
+glimpse(datos_factor)
+```
+
+Veamos histogramas de todas las variables
+
+```{r}
+plot_histogram(datos_factor)
+
+datos_factor %>%
+  select_if(is.numeric) %>% 
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "valor") %>% 
+  ggplot(aes(x = valor)) +
+  geom_histogram(bins = 20, fill = "steelblue", color = "white") +
+  facet_wrap(~ variable, scales = "free") + # scales="free" ajusta los ejes X e Y a cada variable
+  theme_minimal() +
+  labs(title = "Distribución de Variables Numéricas", x = "", y = "Frecuencia")
+```
+
+Por otro lado en el enunciado se nos dice lo siguiente: Los estudiantes podrán explorar cómo la asistencia a clase, las horas de estudio, el uso de redes sociales, la ansiedad o el sueño influyen en variables como la nota, el número de faltas, la probabilidad de aprobar o los créditos superados.
+
+Por lo que vamos a analizar las relaciones entre posibles variables "respuesta" y sus posibles causas. Nota vs causas
+
+```{r}
+#defino las variables causa
+predictores <- c("clases_asistidas", "horas_estudio", "uso_redes", "ansiedad", "horas_sueno")
+
+# Gráfico para 'nota' vs todos los predictores
+datos_factor %>%
+  select(nota, all_of(predictores)) %>%
+  pivot_longer(cols = -nota, names_to = "predictor", values_to = "valor") %>%
+  ggplot(aes(x = valor, y = nota)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) +
+  facet_wrap(~ predictor, scales = "free_x") +
+  theme_minimal() +
+  labs(
+    title = "Relación entre predictores y la Nota Final",
+    x = "Valor del predictor",
+    y = "Nota"
+  )
+```
+
+creditos_superados vs causas
+
+```{r}
+# Gráfico para 'creditos_superados' vs todos los predictores
+datos_factor %>%
+  select(creditos_superados, all_of(predictores)) %>%
+  pivot_longer(cols = -creditos_superados, names_to = "predictor", values_to = "valor") %>%
+  ggplot(aes(x = valor, y = creditos_superados)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) +
+  facet_wrap(~ predictor, scales = "free_x") +
+  theme_minimal() +
+  labs(
+    title = "Relación entre predictores y la Nota Final",
+    x = "Valor del predictor",
+    y = "creditos_superados"
+  )
+```
+
+faltas vs causas
+
+```{r}
+datos_factor %>%
+  select(faltas, all_of(predictores)) %>%
+  pivot_longer(cols = -faltas, names_to = "predictor", values_to = "valor") %>%
+  ggplot(aes(x = valor, y = faltas)) +
+  geom_jitter(alpha = 0.3, color = "darkgreen", width = 0.2, height = 0.2) +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +
+  facet_wrap(~ predictor, scales = "free_x") +
+  theme_minimal() +
+  labs(
+    title = "Influencia de los predictores sobre el Número de Faltas",
+    x = "Valor del predictor",
+    y = "Faltas"
+  )
+```
+
+Como podemos observar por como tenemos definida la variable hay que trabajar más a fondo con esta variable respuesta pues tenemos una interaccion algo peculiar al ser una variable (conteo, NegBin).
+
+Aprobado vs causas
+
+```{r}
+datos_factor %>%
+  mutate(aprobado = factor(aprobado, labels = c("No Aprobado", "Aprobado"))) %>%
+  select(aprobado, all_of(predictores)) %>%
+  pivot_longer(cols = -aprobado, names_to = "predictor", values_to = "valor") %>%
+  ggplot(aes(x = aprobado, y = valor, fill = aprobado)) +
+  geom_boxplot(alpha = 0.7, show.legend = FALSE) +
+  facet_wrap(~ predictor, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Diferencias en predictores según el estado de Aprobación",
+    x = "Estado",
+    y = "Valor del predictor"
+  )
+```
+Resumen de nuestros datos, que incluye mínimos, máximos, media, mediana y quartiles. 
+```{r}
+summary(datos_factor)
+```
+
+# Nos falta poner conclusiones y un análisis más exhaustivo, también añadir más causas a los anteriores
+
+## Bloque 2
+
+Este bloque consiste en ver como tratar los valores faltantes, que hemos visto que existen en el anterior bloque al salirnos algunos avisos. 
+
+Apartado 1, identificar las variables con variables faltantes.
+Para ello, haremos uso de la función dfSummary, que al resumirnos los datos, nos da también la cantidad de datos faltantes en cada variable.
+```{r}
+print(dfSummary(datos_factor),method = "render")
+```
+Como podemos ver tenemos en 5 variables distintas que nos faltan 5 respuestas en cada una, un 1% de cada variable.
+
+Apartado 2, calcular la proporción de datos faltantes sobre el total de datos.
+
+Como ya vimos hay 5 variables a las que les faltan 5, pero hay que ver si coinciden en algún caso (que un mismo estudiante, le falte en más de una columna la respuesta)
+```{r}
+#Total de filas (entradas)
+total_filas <- nrow(datos_factor)
+#Número de filas con AL MENOS un valor faltante (si tuviese dos valores una misma fila solo contaría 1)
+filas_con_na <- sum(!complete.cases(datos_factor))
+#Calculo de proporción
+proporcion <- filas_con_na / total_filas
+
+cat("Total de filas:", total_filas, "\n")
+cat("Filas con algún NA:", filas_con_na, "\n")
+cat("Proporción:", proporcion, "\n")
+cat("Porcentaje:", round(proporcion * 100, 2), "%\n")
+```
+Apartado 3, imputación de media en IQ.
+Se nos pide que utilicemos el método de imputación por media sobre los valores faltantes de la variable IQ. Consiste en sustituir el NA por la media de esa variable. 
+```{r}
+#Guardamos las filas donde hay huecos en iq
+posiciones_na_iq <- which(is.na(datos_factor$IQ))
+#antes
+datos_factor[posiciones_na_iq,]
+datos_imputados_mediaiq <- datos_factor %>%
+  mutate(IQ = ifelse(is.na(IQ), mean(IQ, na.rm = TRUE), IQ))
+#despues
+datos_imputados_mediaiq[posiciones_na_iq, ]
+```
+Apartado 4, comparar histogramas
+```{r}
+#Guardamos las filas donde hay huecos en iq
+posiciones_na_horas <- which(is.na(datos_factor$horas_estudio))
+#antes
+datos_factor[posiciones_na_horas,]
+datos_imputados_mediahoras <- datos_factor %>%
+  mutate(horas_estudio = ifelse(is.na(horas_estudio), mean(horas_estudio, na.rm = TRUE), horas_estudio))
+#despues
+datos_imputados_mediahoras[posiciones_na_horas, ]
+# Dividir el área de gráficos en 1 fila y 2 columnas
+par(mfrow = c(1, 2))
+
+# Histograma ANTES
+hist(
+  datos_factor$horas_estudio, 
+  main = "Antes de Imputar", 
+  xlab = "Horas de Estudio", 
+  col = "lightblue", 
+  border = "white"
+)
+
+# Histograma DESPUÉS
+hist(
+  datos_imputados_mediahoras$horas_estudio, 
+  main = "Después de Imputar (Media)", 
+  xlab = "Horas de Estudio", 
+  col = "lightgreen", 
+  border = "white"
+)
+
+# Restaurar la configuración gráfica a 1 solo panel
+par(mfrow = c(1, 1))
+
+
+hist(
+  datos_imputados_mediahoras$horas_estudio, 
+  main = "Después de Imputar (Media)", 
+  xlab = "Horas de Estudio", 
+  col = "blue", 
+  border = "white"
+)
+hist(
+  datos_factor$horas_estudio, 
+  main = "Antes de Imputar", 
+  xlab = "Horas de Estudio", 
+  col = "blue", 
+  border = "white"
+)
+
+
+# 1. Dibujamos el primer histograma (DESPUÉS de imputar) en azul
+hist(datos_imputados_mediahoras$horas_estudio, 
+     main = "Horas de Estudio: Antes vs Después", 
+     xlab = "Horas de Estudio", 
+     ylab = "Frecuencia",
+     col = rgb(0.2, 0.5, 0.8, 0.25), # Azul transparente
+     border = "white")
+
+# 2. Superponemos el segundo histograma (ANTES de imputar) encima
+hist(datos_factor$horas_estudio, 
+     col = rgb(0.8, 0.2, 0.2, 0.2), # Rojo transparente
+     add = TRUE) # Superpone sobre el anterior
+
+# 3. Añadimos la leyenda para identificar cada uno
+legend("topright", 
+       legend = c("Después (Imputado)", "Antes (Con NAs)"), 
+       fill = c(rgb(0.2, 0.5, 0.8, 0.5), rgb(0.8, 0.2, 0.2, 0.5)))
+```
+# Puse 3 formas de compararlo, hay que elegir que preferimos
+
+Apartado 5,	discute si es razonable asumir que los valores faltantes son MCAR. 
+
+Para ello, vamos a difenciar los 3 tipos de datos faltantes principales
+<https://medium.com/@jeinffersonjbg/t%C3%A9cnicas-para-determinar-los-tipos-de-valores-faltantes-616f39271395>
+<https://rpubs.com/JairoAyala/Missing_data>
+Datos faltantes completamente aleatorios (MCAR): si se presentan de manera completamente aleatoria.La existencia de valores perdidos es independiente de los datos. 
+Datos faltantes aleatorios(MAR): si la presencia de valores faltantes en una variable esta relacionada con la presencia de valores en otra variable. La probabilidad de ser un dato faltante es la misma dentro de los grupos definidos por los datos observados.
+
+Datos faltantes no aleatorios (MNAR): si los valores faltantes dependen de un rango propio de la variable que los presenta. La probabilidad de ser un dato faltante se debe a razón desconocidas.
+
+
+
