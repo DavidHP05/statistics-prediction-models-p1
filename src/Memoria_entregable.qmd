@@ -27,6 +27,8 @@ library(tidyverse)
 library(summarytools)
 library(dplyr)
 library(DataExplorer)
+library(visdat)
+library(naniar)
 datos <- read.csv("data/students_A.csv")
 ```
 
@@ -349,5 +351,9 @@ Datos faltantes aleatorios(MAR): si la presencia de valores faltantes en una var
 
 Datos faltantes no aleatorios (MNAR): si los valores faltantes dependen de un rango propio de la variable que los presenta. La probabilidad de ser un dato faltante se debe a razón desconocidas.
 
+```{r}
+vis_miss(datos_factor)
+gg_miss_var(datos_factor)
+```
 
 

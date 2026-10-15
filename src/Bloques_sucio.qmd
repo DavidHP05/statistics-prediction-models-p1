@@ -201,5 +201,11 @@ plot(x = datos_imputados_arbol$uso_redes,
 # 4. (Opcional) Leyenda para identificar los puntos imputados/faltantes
 
 ```
+```{r}
+library(visdat)
+library(naniar)
+vis_miss(datos_factor)
+gg_miss_var(datos_factor)
+```
 
 
