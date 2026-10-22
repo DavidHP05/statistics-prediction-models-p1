@@ -8,7 +8,7 @@ editor: visual
 #Bloque 1
 
 #Ejercicio 1, calcular media, mediana y desviación típica
-datos <- read.csv("data/students_A.csv")
+datos <- read.csv("../data/students_A.csv")
 media_nota       <- mean(datos$nota, na.rm = TRUE)
 mediana_nota     <- median(datos$nota, na.rm = TRUE)
 desv_tipica_nota <- sd(datos$nota, na.rm = TRUE)
@@ -85,6 +85,7 @@ corrplot(matriz_cor, method = "color", type = "upper",
 
 ```{r}
 library(caret)
+library(tidyr)
 dim(datos)
 head(datos)
 ```
@@ -207,5 +208,60 @@ library(naniar)
 vis_miss(datos_factor)
 gg_miss_var(datos_factor)
 ```
+
+
+
+
+```{r}
+datos_limpios <- datos_factor %>% drop_na()
+```
+
+Bloque 3
+Apartados 1 y 3
+```{r}
+modelo_noas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
+summary(modelo_noas_horas)
+# R-cuadrado
+r_squared <- summary(modelo_noas_horas)$r.squared
+cat("\nR²:", round(r_squared, 3))
+```
+```{r}
+
+# Visualizar los datos
+ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Regresion modelo nota x horas estudio",
+       x = "Variable horas_estudio", y = "Variable nota") +
+  theme_minimal()
+```
+
+
+```{r}
+# 1. Ajuste del modelo de regresión lineal múltiple
+modelo_multiple <- lm(nota ~ horas_estudio + clases_asistidas + IQ, data = datos)
+
+# 2. Visualización de los resultados (coeficientes, R^2, p-valores, etc.)
+summary(modelo_multiple)
+```
+
+```{r}
+# 1. Ajustar el modelo de regresión lineal múltiple incluyendo 'uso_redes'
+modelo_ampliado <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes, data = datos)
+
+# 2. Ver el resumen completo con los nuevos coeficientes y el R^2 actualizado
+summary(modelo_ampliado)
+```
+
+```{r}
+
+# Ajustar el modelo incluyendo trabajo_parcial
+modelo_completo <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes + trabajo_parcial, data = datos_limpios)
+
+# Ver los resultados detallados del modelo
+summary(modelo_completo)
+
+```
+
 
 

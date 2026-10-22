@@ -29,7 +29,7 @@ library(dplyr)
 library(DataExplorer)
 library(visdat)
 library(naniar)
-datos <- read.csv("data/students_A.csv")
+datos <- read.csv("../data/students_A.csv")
 ```
 
 ## Bloque 1 : Exploración inicial
@@ -355,5 +355,33 @@ Datos faltantes no aleatorios (MNAR): si los valores faltantes dependen de un ra
 vis_miss(datos_factor)
 gg_miss_var(datos_factor)
 ```
+
+(justificar que da igual + ejemplo de codigos, nos quedamos con eliminar)
+
+Eliminamos las entradas
+```{r}
+datos_limpios <- datos_factor %>% drop_na()
+```
+
+
+
+## Bloque 3. Regresión lineal simple y múltiple
+
+A continuación, ajustamos algunos modelos para nuestros datos. 
+Apartado 1. Ajustamos el modelo para notas sobre horas de estudio:
+```{r}
+modelo_noas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
+summary(modelo_noas_horas)
+# R-cuadrado
+r_squared <- summary(modelo_noas_horas)$r.squared
+cat("\nR²:", round(r_squared, 3))
+```
+Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota.
+El p-valor es lo suficientemente pequeño (< 2.2e-16) para rechazar la hipótesis nula, y aceptar que hay una relación lineal. Sin embargo, R^2 es muy pequeño, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo.
+# ¿Y qué leches significa F?
+
+
+
+
 
 
