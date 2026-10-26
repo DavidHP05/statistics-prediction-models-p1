@@ -262,6 +262,51 @@ modelo_completo <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes +
 summary(modelo_completo)
 
 ```
+(Revisar seguramente este recogido a estas alturas trabajo parcial en horas asistidas correlacion 0,5 entre ambas además)
+
+Bloque 4
+
+```{r}
+
+# Ajustar el modelo horas de estudio + horas de estudio al cuadrado
+modelo_horas_cuadrado <- lm(nota ~ horas_estudio + I(horas_estudio^2), data = datos_limpios)
+
+# Ver los resultados detallados del modelo
+summary(modelo_horas_cuadrado)
+
+```
+```{r}
+
+# Ajustar el modelo horas de estudio + uso_redes
+modelo_uso_redes <- lm(nota ~ horas_estudio + I(horas_estudio^2) + I(ifelse(uso_redes > 3, 1, 0)), data = datos_limpios)
+
+# Ver los resultados detallados del modelo
+summary(modelo_uso_redes)
+
+```
+
+```{r}
+
+# Ajustar el modelo nota con ansiedad con suavizado LOESS
+modelo_ansiedad_LOESS <- lm(nota ~ ansiedad, data = datos_limpios)
+
+# Ver los resultados detallados del modelo
+summary(modelo_ansiedad_LOESS)
+
+# Gráfico de Residuos vs. Valores Ajustados con ggplot2
+ggplot(modelo_ansiedad_LOESS, aes(x = nota, y = ansiedad)) +
+  geom_point(color = "#0072B2", alpha = 0.7) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linewidth = 0.8, formula = y ~ x) +
+  labs(
+    title = "Nota vs Ansiedad",
+    x = "Nota",
+    y = "Ansiedad"
+  ) +
+  theme_classic(base_size = 12)
+
+```
+
 
 
 
