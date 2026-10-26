@@ -370,18 +370,89 @@ datos_limpios <- datos_factor %>% drop_na()
 A continuación, ajustamos algunos modelos para nuestros datos. 
 Apartado 1. Ajustamos el modelo para notas sobre horas de estudio:
 ```{r}
-modelo_noas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
-summary(modelo_noas_horas)
+modelo_notas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
+summary(modelo_notas_horas)
 # R-cuadrado
-r_squared <- summary(modelo_noas_horas)$r.squared
+r_squared <- summary(modelo_notas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
 Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota.
 El p-valor es lo suficientemente pequeño (< 2.2e-16) para rechazar la hipótesis nula, y aceptar que hay una relación lineal. Sin embargo, R^2 es muy pequeño, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo.
-# ¿Y qué leches significa F?
+Además el estadístico F que mide el ratio entre variabilidad explicada vs no explicada es medianamente alto con un valor de 254.3, por lo que es un buen indicador de que hay relación entre las variables.
+
+Apartado 2. Representar la recta ajustada sobre el diagrama de dispersión. 
+```{r}
+ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Regresion modelo nota x horas estudio",
+       x = "Variable horas_estudio", y = "Variable nota") +
+  theme_minimal()
+```
+Con el gráfico podemos ver una tendencia a que según aumentan las horas de estudio, también lo hace la nota.
+Aun así, tenemos bastante dispersión a lo largo de la recta, por lo que como veremos más adelante,
+las horas de estudio no es lo único que afectará a nuestra variable nota.
+
+Apartado 3. 3.	Calcula el (R^2) del modelo simple anterior
+```{r}
+r_squared <- summary(modelo_noas_horas)$r.squared
+cat("\nR²:", round(r_squared, 3))
+```
+El R^2 es de 0,35 aproximadamente, por lo que según la definición del mismo, nos indica que la variabilidad
+total explicada por nuestro modelo es del 35%
 
 
+Apartado 4. 4.	Ajusta el modelo múltiple: nota ~ horas_estudio + clases_asistidas + IQ
 
+```{r}
+#Ajuste del modelo de regresión lineal múltiple
+modelo_multiple <- lm(nota ~ horas_estudio + clases_asistidas + IQ, data = datos_limpios)
+summary(modelo_multiple)
+```
+Según el modelo multilineal, cada variable tiene los siguientes efectos:
+Horas_estudio: por cada hora de estudio aumenta la nota 0,1299.
+clases_asistidas: por cada 1% de clases asistidas aumenta la nota 0,0075
+IQ:: por cada punto de IQ aumenta la nota 0,0255
+De primera mano parece que el porcentaje de asistencia es el que menos aporta a la nota por ahora.
+Además de que justo esa variable no tiene apenas diferencia de grado de magnitud entre el estimate y el error. Además de que el p valor es relativamente superior a 0,05 no podemos rechazar la hipótesis nula y es una variable que no es estadísticamente significativa. 
 
+Los términos generales R^2 y estadístico F:
+El R^2 ajustado es de 0,4193 por lo que nuestro modelo explica la variabilidad en un 41,93%. 
+EL estadístico F sigue siendo elevado por lo que sigue siendo buena señal. 
+
+Apartado 5. 5.	Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
+El coeficiente en el modelo lineal era de 0.132961 mientras que en el multilineal era de 0.129948. Con los errores 0.008337 y 0.007881 respectivamente.
+
+Vemos que con el multilineal aumentamos la precisión al disminuir el error, a la vez que el efecto que tiene la variable horas_estudio sobre nota también disminuye ligeramente, debido a que las otras variables iq y clases_asistidas también están haciendo su aporte. 
+
+Si nos fijamos en el R^2 vemos que entre el modelo lineal y el multilineal ha aumentado significativamente por lo que añadir estas dos nuevas varibales ha sido una mejora respecto al lineal simple. Aun así en el apartado anterior vimos que tenemos nuestras dudas sobre la variable clases_asistidas, por ello vamos a realizar el modelo solo con iq y las horas de estudio para comparar resultados.
+
+#Extra por añadir, modelo solo iq y horas estudio y compararlo.
+
+Apartado 6. 6.	Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
+```{r}
+#Añadimos la nueva variable a un nuevo modelo
+modelo_ampliado <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes, data = datos)
+summary(modelo_ampliado)
+```
+La variable nueva uso de redes: por los resultados del modelo vemos que el uso de redes disminuye la nota, además de que el error tiene diferencias de orden de magnitud, lo que es buena señal.
+
+Cambios:
+Las variables horas_estudio e IQ aumentan ligeramente en su aporte por unidad a la nota, mientras que el aporte de la variable clases_asistidas se reduce.
+
+Por otro lado como era de esperar, al añadir una nueva variable el R^2 y el R^2 ajustado aumenta, aunque no en gran medida. 
+Mientras el estadístico F disminuye respecto al modelo anterior, aunque sigue manteniendose elevado. 
+
+Apartado 7. 7.	Interpreta el efecto de tener trabajo_parcial en el modelo múltiple.
+
+```{r}
+#Añadimos la nueva variable al modelo anterior
+modelo_completo <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes + trabajo_parcial, data = datos_limpios)
+summary(modelo_completo)
+```
+Por un lado, el estimate, nos dice que tener trabajo parcial disminuye la nota. Y al haberse añadido, han variado los estimados del resto de variables ligeramente. 
+Por otro lado, si analizamos el R^2 tomando en cuenta el modelo previo, vemos que tanto el R^2 como el R^2 ajustado apenas ha aumentado, por lo que añadir esta variable al modelo, no nos aporta un gran beneficio en la explicación de la varianza. Además de que añadir esta variable ha disminuido más el estadístico F. 
+
+#Bloque 4 
 
 
