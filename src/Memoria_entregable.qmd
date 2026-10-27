@@ -376,9 +376,12 @@ summary(modelo_notas_horas)
 r_squared <- summary(modelo_notas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
-Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota.
-El p-valor es lo suficientemente pequeño (< 2.2e-16) para rechazar la hipótesis nula, y aceptar que hay una relación lineal. Sin embargo, R^2 es muy pequeño, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo.
-Además el estadístico F que mide el ratio entre variabilidad explicada vs no explicada es medianamente alto con un valor de 254.3, por lo que es un buen indicador de que hay relación entre las variables.
+Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota, lo que puede tener sentido dentro de nuestro contexto.
+El p-valor es lo suficientemente pequeño en la variable (< 2.2e-16) para rechazar la hipótesis nula , y aceptar que hay una relación lineal. 
+
+
+Aun así, R^2 es algo pequeño pequeño. 0,35 y solo explica el 35% de la variabilidad total, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo.
+Además el estadístico F que mide el ratio entre variabilidad explicada vs no explicada es medianamente alto con un valor de 254.3, por lo que es un buen indicador de que hay relación entre las variable y al tener un p-valor < 2.2e-16 podemos decir que el modelo es significativo.
 
 Apartado 2. Representar la recta ajustada sobre el diagrama de dispersión. 
 ```{r}
@@ -416,18 +419,19 @@ IQ:: por cada punto de IQ aumenta la nota 0,0255
 De primera mano parece que el porcentaje de asistencia es el que menos aporta a la nota por ahora.
 Además de que justo esa variable no tiene apenas diferencia de grado de magnitud entre el estimate y el error. Además de que el p valor es relativamente superior a 0,05 no podemos rechazar la hipótesis nula y es una variable que no es estadísticamente significativa. 
 
-Los términos generales R^2 y estadístico F:
+Para las otras dos variables sin embargo parece que tanto tu error estimado y el p-valor, están en rangos que no generan preocupación. 
+
+
 El R^2 ajustado es de 0,4193 por lo que nuestro modelo explica la variabilidad en un 41,93%. 
-EL estadístico F sigue siendo elevado por lo que sigue siendo buena señal. 
+EL estadístico F sigue siendo elevado y con p-valor < 2.2e-16, por lo que el modelo es globalmente significativo. 
 
 Apartado 5. 5.	Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
+
 El coeficiente en el modelo lineal era de 0.132961 mientras que en el multilineal era de 0.129948. Con los errores 0.008337 y 0.007881 respectivamente.
 
 Vemos que con el multilineal aumentamos la precisión al disminuir el error, a la vez que el efecto que tiene la variable horas_estudio sobre nota también disminuye ligeramente, debido a que las otras variables iq y clases_asistidas también están haciendo su aporte. 
 
 Si nos fijamos en el R^2 vemos que entre el modelo lineal y el multilineal ha aumentado significativamente por lo que añadir estas dos nuevas varibales ha sido una mejora respecto al lineal simple. Aun así en el apartado anterior vimos que tenemos nuestras dudas sobre la variable clases_asistidas, por ello vamos a realizar el modelo solo con iq y las horas de estudio para comparar resultados.
-
-#Extra por añadir, modelo solo iq y horas estudio y compararlo.
 
 Apartado 6. 6.	Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
 ```{r}
@@ -452,6 +456,29 @@ summary(modelo_completo)
 ```
 Por un lado, el estimate, nos dice que tener trabajo parcial disminuye la nota. Y al haberse añadido, han variado los estimados del resto de variables ligeramente. 
 Por otro lado, si analizamos el R^2 tomando en cuenta el modelo previo, vemos que tanto el R^2 como el R^2 ajustado apenas ha aumentado, por lo que añadir esta variable al modelo, no nos aporta un gran beneficio en la explicación de la varianza. Además de que añadir esta variable ha disminuido más el estadístico F. 
+
+#Extra: var clases_asistidas
+
+Hemos visto que en nuestros modelos, la variable clases_asistidas era problematica tanto por su aporte, su error y su p-valor. 
+Vamos a hacer un pequeño análisis para ver si quizá es una variable candidata a ser eliminada. 
+
+```{r}
+plot(datos_limpios$nota, datos_limpios$clases_asistidas,
+     pch = 19, xlab = "Nota", ylab = "clases_asistidas",
+     main = "")
+abline(modelo_log, col = "red", lwd = 2)
+lines(lowess(datos_limpios$nota, datos_limpios$clases_asistidas), 
+      col = "blue", 
+      lwd = 2)
+
+```
+Podemos ver que para todo tipo de notas hay una gran dispersión en porcentaje de clases asistidas. 
+Veamos ahora un modelo entre esta variable y la nota.
+```{r}
+modelo_clases_asistidas <- lm(nota ~ clases_asistidas, data = datos_limpios)
+summary(modelo_clases_asistidas)
+```
+Como vemos con solo esta variable el estadístico F es casi 1 y tiene un p-valor grande. Por tanto concluimos que esta variable no es significativa para nuestra variable respuesta nota. 
 
 #Bloque 4 
 
