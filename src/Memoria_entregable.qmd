@@ -478,7 +478,9 @@ Veamos ahora un modelo entre esta variable y la nota.
 modelo_clases_asistidas <- lm(nota ~ clases_asistidas, data = datos_limpios)
 summary(modelo_clases_asistidas)
 ```
-Como vemos con solo esta variable el estadístico F es casi 1 y tiene un p-valor grande. Por tanto concluimos que esta variable no es significativa para nuestra variable respuesta nota. 
+El R^2 es diminuto por lo que no explica nada de la variabilidad total. Además, con solo esta variable el estadístico F es casi 1 y tiene un p-valor grande. Por tanto concluimos que esta variable no es significativa para nuestra variable respuesta nota. 
+
+
 
 #Bloque 4 
 
