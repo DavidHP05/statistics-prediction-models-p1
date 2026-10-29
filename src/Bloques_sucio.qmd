@@ -306,7 +306,137 @@ ggplot(modelo_ansiedad_LOESS, aes(x = nota, y = ansiedad)) +
   theme_classic(base_size = 12)
 
 ```
+```{r}
+library(splines)
 
+#Ajuste del modelo cuadrático
+modelo_cuadratico <- lm(nota ~ poly(horas_estudio, 2, raw = TRUE), data = datos_limpios)
+#Ajuste del modelo con Spline (por ejemplo, spline natural con 3 grados de libertad)
+modelo_spline <- lm(nota ~ ns(horas_estudio, df = 3), data = datos_limpios)
+
+# Comparación gráfica
+plot(datos_limpios$horas_estudio, datos_limpios$nota, col = "gray", pch = 16, 
+     xlab = "Horas de Estudio", ylab = "Nota")
+
+#Generar predicciones para una secuencia continua de horas
+grid_horas <- data.frame(horas_estudio = seq(min(datos_limpios$horas_estudio), max(datos_limpios$horas_estudio), length.out = 200))
+
+grid_horas$pred_cuadratico <- predict(modelo_cuadratico, newdata = grid_horas)
+grid_horas$pred_spline     <- predict(modelo_spline, newdata = grid_horas)
+
+lines(grid_horas$horas_estudio, grid_horas$pred_cuadratico, col = "blue", lwd = 2)
+lines(grid_horas$horas_estudio, grid_horas$pred_spline, col = "red", lwd = 2)
+legend("topleft", legend = c("Cuadrático", "Spline"), col = c("blue", "red"), lty = 1, lwd = 2)
+
+# 4. Comparación mediante AIC y ANOVA
+AIC(modelo_cuadratico, modelo_spline)
+anova(modelo_cuadratico, modelo_spline)
+
+```
+P-valor alto no podemo concluir que uno sea mejor que otro estadísticamente.
+Encima AIC casi igual.
+
+```{r}
+library(segmented)
+modelo_lineal_sueno <- lm(nota~horas_sueno, data=datos_limpios)
+modelo_cuadratico_sueno<- lm(nota ~ poly(horas_sueno, 2, raw = TRUE), data = datos_limpios)
+modelo_piecewise_sueno<- segmented(modelo_lineal_sueno,seg.Z = ~horas_sueno, psi=6)
+summary(modelo_piecewise_sueno)
+summary(modelo_cuadratico_sueno)
+summary(modelo_lineal_sueno)
+
+
+# 1. Crear un grid de puntos para predicciones continuas
+grid_sueno <- data.frame(
+  horas_sueno = seq(min(datos_limpios$horas_sueno, na.rm = TRUE), 
+                    max(datos_limpios$horas_sueno, na.rm = TRUE), 
+                    length.out = 200)
+)
+
+# 2. Generar predicciones para los 3 modelos
+grid_sueno$pred_lineal     <- predict(modelo_lineal_sueno, newdata = grid_sueno)
+grid_sueno$pred_cuadratico <- predict(modelo_cuadratico_sueno, newdata = grid_sueno)
+grid_sueno$pred_piecewise  <- predict(modelo_piecewise_sueno, newdata = grid_sueno)
+
+# 3. Graficar con ggplot2
+ggplot(datos_limpios, aes(x = horas_sueno, y = nota)) +
+  # Puntos observados
+  geom_point(color = "gray60", alpha = 0.6) +
+  # Líneas de los modelos
+  geom_line(data = grid_sueno, aes(y = pred_lineal, color = "Lineal"), size = 1) +
+  geom_line(data = grid_sueno, aes(y = pred_cuadratico, color = "Cuadrático"), size = 1) +
+  geom_line(data = grid_sueno, aes(y = pred_piecewise, color = "Piecewise"), size = 1) +
+  # Personalización de colores y etiquetas
+  scale_color_manual(
+    name = "Modelo",
+    values = c("Lineal" = "blue", "Cuadrático" = "darkgreen", "Piecewise" = "red")
+  ) +
+  labs(
+    x = "Horas de Sueño",
+    y = "Nota",
+    title = "Comparación de Modelos: Horas de Sueño vs. Nota"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+
+```{r}
+AIC(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
+
+```
+
+##Bloque 5
+```{r}
+library(lmtest)
+install.packages("sandwich")
+library(sandwich)
+head(datos_limpios)
+
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + ingresos_familiares, data = datos_limpios)
+summary(modelo_bloque5)
+bptest(modelo_bloque5)
+
+varianzas_ansiedad <- datos_limpios %>%
+  mutate(
+    # Extraer residuos del modelo
+    residuos = residuals(modelo_bloque5),
+    # Crear los 3 grupos de ansiedad (terciles)
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = quantile(ansiedad, probs = seq(0, 1, length.out = 4), na.rm = TRUE),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  ) %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n = n(),
+    varianza_residuos = var(residuos, na.rm = TRUE)
+  )
+
+print(varianzas_ansiedad)
+
+# No sé qué cojopios es esto
+modelo_robusto <- coeftest(modelo_bloque5, vcov = vcovHC(modelo_bloque5, type = "HC3"))
+print(modelo_robusto)
+
+
+se_ordinarios <- summary(modelo_bloque5)$coefficients[, "Std. Error"]
+se_robustos <- modelo_robusto[, "Std. Error"]
+
+comparacion_se <- data.frame(
+  Coeficiente = names(se_ordinarios),
+  SE_Ordinario = se_ordinarios,
+  SE_Robusto = se_robustos,
+  Diferencia = se_robustos - se_ordinarios
+)
+
+print(comparacion_se)
+
+```
 
 
 
