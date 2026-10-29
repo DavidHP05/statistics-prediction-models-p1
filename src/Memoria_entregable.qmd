@@ -29,6 +29,8 @@ library(dplyr)
 library(DataExplorer)
 library(visdat)
 library(naniar)
+library(splines) #para el spline bloque 4
+library(segmented) #para el piecewise bloque 4
 datos <- read.csv("../data/students_A.csv")
 ```
 
@@ -482,6 +484,207 @@ El R^2 es diminuto por lo que no explica nada de la variabilidad total. Además,
 
 
 
-#Bloque 4 
+#Bloque 4 No linealidades y piecewise
+
+Apartado 1. 1.	Ajusta: nota ~ horas_estudio + I(horas_estudio^2) y comparar con el modelo lineal simple.
+
+```{r}
+#Modelos y summarys
+modelo_horas_estudio<-lm(nota ~ horas_estudio, data = datos_limpios)
+modelo_horas_cuadrado <- lm(nota ~ horas_estudio + I(horas_estudio^2), data = datos_limpios)
+summary(modelo_horas_studio)
+summary(modelo_horas_cuadrado)
+```
+Por ahora nos podemos fijar en el coeficiente de la variable horas_estudio y en el R^2. 
+El modelo lineal tiene un R^2 ajustado mayor al modelo lineal. Aunque no dejan de ser bastante parecidos entre si, siendo en el lineal un 0,35 aproximadamente y en el otro un 0,36. Por lo que el cambio de pasar de tener en cuenta la variable horas_estudio a tenerla en cuenta junto a si misma al cuadrado no nos aporta una explicabilidad mayor. 
+La diferencia más notable es en el coeficiente de horas de estudio, ya que en el modelo lineal aporta 0,13 y en el segundo modelo se duplica pasando a ser 0,27. 
+
+Para continuar con nuestro análisis, vamos a realizar un test AIC y un ANOVa entre los modelos. 
+```{r}
+#Comparaciones adicionales
+AIC(modelo_horas_estudio,modelo_horas_cuadrado)
+anova(modelo_horas_estudio,modelo_horas_cuadrado)
+```
+Realizamos un test AIC, que mide la pérdida de información relativa al ajustar un modelo a un conjunto de datos, para ver que modelo parece ser mejor.
+Análisis resultados del AIC:
+- Como vemos el modelo lineal estima 3 parámetros (el intercepto, el coeficiente de la variable y el error), mientras que en el que incluye el cuadrado se gasta un grado más de libertad. 
+-La medida AIC suele ser mejor a cuanto más pequeña sea, por lo que el modelo que incluye la variable al cuadrado parece ser mejor, además la diferencia entre sus índices AIC, es de casi 10.
+
+También realizamos un ANOVA, que es una prueba estadística que sirve para determinar si añadir una o más variables a un modelo estadístico mejora significativamente su capacidad para explicar los datos, en comparación con un modelo más simple. 
+Análisis resultados anova: 
+-13.546 es la diferencia entre la suma de cuadrados de ambos modelos por lo que añadir esa variable cuadrática, disminuye esta suma. 
+-Tenemos un estadístico F de 12 con un p-valor inferior al 0,05 por lo que podemos rechazar la hipótesis nula de que ambos modelos son iguales y queda claro que añadirla mejora el modelo. 
+
+Concluimos así que a pesar de que añadir la variable al cuadrado no aporta explicabilidad (R^2 ajustado) apenas, si que mejora el modelo como vimos con el test AIC
+#Asegurar con victor que esta conclusión es correcta. 
+
+Apartado 2.Introduce uso_redes como variable dicotómica (≤3h vs >3h) y ajústala.
+
+```{r}
+#I(ifelse(uso_redes > 3, 1, 0)) vuelve a la variable dicotómica 
+modelo_bloque4_uso_redes <- lm(nota ~ horas_estudio + I(horas_estudio^2) + I(ifelse(uso_redes > 3, 1, 0)), data = datos_limpios)
+summary(modelo_bloque4_uso_redes)
+```
+Vemos que añadir la variable uso de redes aumenta el R^2 ajustado, pasando de 0,36 a 0,39. Además los p-valores de las 3 variables por si solas son suficientemente pequeños. Además el estadistico F es grande y su p-valor pequeño, por lo que el modelo es significativo también a nivel global. 
+
+Apartado 3. Representa nota frente a ansiedad con suavizado LOESS.
+El suavizado LOESS es un método de regresión no paramétrico que sirve para ajustar una curva suave a través de datos dispersos, revelando tendencias sin imponer una forma matemática global fija. 
+Vamos, en este caso, a aplicar este método a la variable ansiedad frente a nota. 
+
+```{r}
+modelo_ansiedad_LOESS <- lm(nota ~ ansiedad, data = datos_limpios)
+summary(modelo_ansiedad_LOESS)
+# Gráfico de Residuos vs. Valores Ajustados con ggplot2
+ggplot(modelo_ansiedad_LOESS, aes(x = nota, y = ansiedad)) +
+  geom_point(color = "#0072B2", alpha = 0.7) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linewidth = 0.8, formula = y ~ x) +
+  labs(
+    title = "Nota vs Ansiedad",
+    x = "Nota",
+    y = "Ansiedad"
+  ) +
+  theme_classic(base_size = 12)
+
+```
+
+Otro enfoque haciendo que el modelo sea loess en vez de solo el gráfico. 
+#ver cual es mejor
+```{r}
+#Calculamos el modelo loess
+modelo_loess <- loess(nota ~ ansiedad, data = datos_limpios, span = 0.75)
+#Crear una cuadrícula de datos para predecir
+grid_datos <- data.frame(ansiedad = seq(min(datos_limpios$ansiedad), max(datos_limpios$ansiedad), length.out = 200))
+grid_datos$pred_nota <- predict(modelo_loess, newdata = grid_datos)
+#Graficar el modelo ajustado
+ggplot(datos_limpios, aes(x = ansiedad, y = nota)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_line(data = grid_datos, aes(x = ansiedad, y = pred_nota), color = "darkred", size = 1) +
+  theme_minimal() +
+  labs(title = "LOESS predicho a partir del objeto de modelo")
+```
+Apartado 4.	Ajusta un spline sobre horas_estudio y compáralo con el modelo cuadrático.
+
+```{r}
+#Ajuste del modelo cuadrático
+modelo_cuadratico <- lm(nota ~ poly(horas_estudio, 2, raw = TRUE), data = datos_limpios)
+#Ajuste del modelo con Spline (por ejemplo, spline natural con 3 grados de libertad)
+modelo_spline <- lm(nota ~ ns(horas_estudio, df = 3), data = datos_limpios)
+
+ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
+  geom_point(color = "gray50", alpha = 0.7, size = 2) +
+  #Curva 1: Modelo cuadrático
+  stat_smooth(
+    method = "lm", 
+    formula = y ~ poly(x, 2, raw = TRUE), 
+    aes(color = "Cuadrático"), 
+    se = FALSE, 
+    linewidth = 1
+  ) +
+  # Curva 2: Spline Natural (df = 3)
+  stat_smooth(
+    method = "lm", 
+    formula = y ~ ns(x, df = 3), 
+    aes(color = "Spline"), 
+    se = FALSE, 
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    name = "Modelo",
+    values = c("Cuadrático" = "blue", "Spline" = "red")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Comparación de Ajustes: Cuadrático vs Spline",
+    x = "Horas de Estudio",
+    y = "Nota"
+  )
+
+#Comparación mediante AIC y ANOVA
+AIC(modelo_cuadratico, modelo_spline)
+anova(modelo_cuadratico, modelo_spline)
+
+```
+En la gráfica de ggplot2, vemos que ambas líneas se parecen bastante lo que nos coincide con la información que nos da el anova y el AIC.
+Por un lado el AIC, nos da un valor casi identico con una diferencia de poco más de 1 unidad, por lo que nos indica que ambos modelos aportan prácticamente la misma información, aportando un poco más el modelo cuadrático al tener un índice menor. 
+
+Por el otro lado, el ANOVa, nos da un F por debajo de uno y con un p-valor de 0,5, por lo que no podemos rechazar la hipótesis nula de que ambos modelos aportan la misma información. 
+
+
+
+Apartado 5.	Ajusta un modelo piecewise en horas_sueno (<6 vs ≥6) para nota.
+```{r}
+modelo_piecewise_sueno<- segmented(modelo_lineal_sueno,seg.Z = ~horas_sueno, psi=6)
+summary(modelo_piecewise_sueno)
+```
+Vemos que el R^2 ajustado es negativo, por lo que este modelo está penalizando bastante el incluir horas de sueño con la variable segmentada del piecewise, es un indicador de que esta variable no explica la variabilidad. 
+#Porque sale p-valor NA
+
+Apartado 6.	Evalúa el AIC entre modelos lineal, cuadrático y piecewise.
+```{r}
+#modelos lineal y cuadrático con horas_sueno
+modelo_lineal_sueno <- lm(nota~horas_sueno, data=datos_limpios)
+modelo_cuadratico_sueno<- lm(nota ~ poly(horas_sueno, 2, raw = TRUE), data = datos_limpios)
+summary(modelo_cuadratico_sueno)
+summary(modelo_lineal_sueno)
+AIC(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
+```
+Por los resultados del AIC, el mejor modelo es el lineal al tener el menos índice. Además aunque entre el lineal y el cuadrático hay menos diferencia y la mejoría podría ser menos notable y depender de más factores para saber con que modelo quedarnos. La diferencia entre el lineal y el piecewise si que es más moderada, teniendo una diferencia de casi 4 unidades. 
+
+Vamos a complementar la comparación con un anova.
+####Comparación extra, anova
+```{r}
+anova(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
+```
+Como podemos observar en los resultados del ANOVA, los p-valores del modelo cuadrático y piecewise son muy superiores a 0,05, por lo que no podemos rechazar sus hipótesis nulas, en el caso del cuadrático que el coeficiente de esa variable sea 0, y en el piecewise que la diferencia entre las pendientes de los tramos segmentados sea 0. 
+También el error RSS apenas cambia en los modelos. 
+
+Ya con esto, queda bastante claro que los modelos más complejos no aportan suficiente como para preferirlos. Si siguiesemos el principio de la navaja de Ockham, nos quedaríamos con el modelo lineal al ser el más sencillo (sumado a que tiene el menor índice AIC). 
+
+Apartado 7.	Representa gráficamente las predicciones piecewise frente a las observaciones reales.
+
+```{r}
+#Crear un grid de puntos para predicciones continuas
+grid_sueno <- data.frame(
+  horas_sueno = seq(min(datos_limpios$horas_sueno, na.rm = TRUE), 
+                    max(datos_limpios$horas_sueno, na.rm = TRUE), 
+                    length.out = 200)
+)
+
+#Generamos predicciones para los 3 modelos
+grid_sueno$pred_lineal     <- predict(modelo_lineal_sueno, newdata = grid_sueno)
+grid_sueno$pred_cuadratico <- predict(modelo_cuadratico_sueno, newdata = grid_sueno)
+grid_sueno$pred_piecewise  <- predict(modelo_piecewise_sueno, newdata = grid_sueno)
+
+#Graficamos
+ggplot(datos_limpios, aes(x = horas_sueno, y = nota)) +
+  #Puntos observados
+  geom_point(color = "gray60", alpha = 0.6) +
+  #Líneas de los modelos
+  geom_line(data = grid_sueno, aes(y = pred_lineal, color = "Lineal"), size = 1) +
+  geom_line(data = grid_sueno, aes(y = pred_cuadratico, color = "Cuadrático"), size = 1) +
+  geom_line(data = grid_sueno, aes(y = pred_piecewise, color = "Piecewise"), size = 1) +
+  #Personalización de colores y etiquetas
+  scale_color_manual(
+    name = "Modelo",
+    values = c("Lineal" = "blue", "Cuadrático" = "darkgreen", "Piecewise" = "red")
+  ) +
+  labs(
+    x = "Horas de Sueño",
+    y = "Nota",
+    title = "Comparación de Modelos: Horas de Sueño vs. Nota"
+  ) +
+  theme_minimal()
+```
+En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con un incremento de la línea del modelo piecewise en el punto de quiebre (8.62) calculado al realizar el modelo en el apartado 5. Y tal y como apuntaba el análisis las líneas tienen prácticamente la misma tendencia. 
+
+##Bloque 5 Heterocedasticidad
+
+```{r}
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares / 1000), data = datos_limpios) #trabajo parcial y curso buena pinta
+summary(modelo_bloque5)
+head(datos_limpios)
+```
+
 
 
