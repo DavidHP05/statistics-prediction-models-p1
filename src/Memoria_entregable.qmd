@@ -25,12 +25,12 @@ library(ggplot2)
 library(corrplot)
 library(tidyverse)
 library(summarytools)
-library(dplyr)
 library(DataExplorer)
 library(visdat)
 library(naniar)
 library(splines) #para el spline bloque 4
 library(segmented) #para el piecewise bloque 4
+library(dplyr)
 datos <- read.csv("../data/students_A.csv")
 ```
 
@@ -156,7 +156,7 @@ predictores <- c("clases_asistidas", "horas_estudio", "uso_redes", "ansiedad", "
 
 # Gráfico para 'nota' vs todos los predictores
 datos_factor %>%
-  select(nota, all_of(predictores)) %>%
+  dplyr::select(nota, all_of(predictores)) %>%
   pivot_longer(cols = -nota, names_to = "predictor", values_to = "valor") %>%
   ggplot(aes(x = valor, y = nota)) +
   geom_point(alpha = 0.4, color = "steelblue") +
@@ -175,7 +175,7 @@ creditos_superados vs causas
 ```{r}
 # Gráfico para 'creditos_superados' vs todos los predictores
 datos_factor %>%
-  select(creditos_superados, all_of(predictores)) %>%
+  dplyr::select(creditos_superados, all_of(predictores)) %>%
   pivot_longer(cols = -creditos_superados, names_to = "predictor", values_to = "valor") %>%
   ggplot(aes(x = valor, y = creditos_superados)) +
   geom_point(alpha = 0.4, color = "steelblue") +
@@ -193,7 +193,7 @@ faltas vs causas
 
 ```{r}
 datos_factor %>%
-  select(faltas, all_of(predictores)) %>%
+  dplyr::select(faltas, all_of(predictores)) %>%
   pivot_longer(cols = -faltas, names_to = "predictor", values_to = "valor") %>%
   ggplot(aes(x = valor, y = faltas)) +
   geom_jitter(alpha = 0.3, color = "darkgreen", width = 0.2, height = 0.2) +
@@ -214,7 +214,7 @@ Aprobado vs causas
 ```{r}
 datos_factor %>%
   mutate(aprobado = factor(aprobado, labels = c("No Aprobado", "Aprobado"))) %>%
-  select(aprobado, all_of(predictores)) %>%
+  dplyr::select(aprobado, all_of(predictores)) %>%
   pivot_longer(cols = -aprobado, names_to = "predictor", values_to = "valor") %>%
   ggplot(aes(x = aprobado, y = valor, fill = aprobado)) +
   geom_boxplot(alpha = 0.7, show.legend = FALSE) +
@@ -400,7 +400,7 @@ las horas de estudio no es lo único que afectará a nuestra variable nota.
 
 Apartado 3. 3.	Calcula el (R^2) del modelo simple anterior
 ```{r}
-r_squared <- summary(modelo_noas_horas)$r.squared
+r_squared <- summary(modelo_notas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
 El R^2 es de 0,35 aproximadamente, por lo que según la definición del mismo, nos indica que la variabilidad
@@ -427,7 +427,7 @@ Para las otras dos variables sin embargo parece que tanto tu error estimado y el
 El R^2 ajustado es de 0,4193 por lo que nuestro modelo explica la variabilidad en un 41,93%. 
 EL estadístico F sigue siendo elevado y con p-valor < 2.2e-16, por lo que el modelo es globalmente significativo. 
 
-Apartado 5. 5.	Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
+Apartado 5.	Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
 
 El coeficiente en el modelo lineal era de 0.132961 mientras que en el multilineal era de 0.129948. Con los errores 0.008337 y 0.007881 respectivamente.
 
@@ -435,7 +435,7 @@ Vemos que con el multilineal aumentamos la precisión al disminuir el error, a l
 
 Si nos fijamos en el R^2 vemos que entre el modelo lineal y el multilineal ha aumentado significativamente por lo que añadir estas dos nuevas varibales ha sido una mejora respecto al lineal simple. Aun así en el apartado anterior vimos que tenemos nuestras dudas sobre la variable clases_asistidas, por ello vamos a realizar el modelo solo con iq y las horas de estudio para comparar resultados.
 
-Apartado 6. 6.	Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
+Apartado 6.	Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
 ```{r}
 #Añadimos la nueva variable a un nuevo modelo
 modelo_ampliado <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes, data = datos)
@@ -468,7 +468,6 @@ Vamos a hacer un pequeño análisis para ver si quizá es una variable candidata
 plot(datos_limpios$nota, datos_limpios$clases_asistidas,
      pch = 19, xlab = "Nota", ylab = "clases_asistidas",
      main = "")
-abline(modelo_log, col = "red", lwd = 2)
 lines(lowess(datos_limpios$nota, datos_limpios$clases_asistidas), 
       col = "blue", 
       lwd = 2)
@@ -492,7 +491,7 @@ Apartado 1. 1.	Ajusta: nota ~ horas_estudio + I(horas_estudio^2) y comparar con 
 #Modelos y summarys
 modelo_horas_estudio<-lm(nota ~ horas_estudio, data = datos_limpios)
 modelo_horas_cuadrado <- lm(nota ~ horas_estudio + I(horas_estudio^2), data = datos_limpios)
-summary(modelo_horas_studio)
+summary(modelo_horas_estudio)
 summary(modelo_horas_cuadrado)
 ```
 Por ahora nos podemos fijar en el coeficiente de la variable horas_estudio y en el R^2. 
@@ -614,6 +613,7 @@ Por el otro lado, el ANOVa, nos da un F por debajo de uno y con un p-valor de 0,
 
 Apartado 5.	Ajusta un modelo piecewise en horas_sueno (<6 vs ≥6) para nota.
 ```{r}
+modelo_lineal_sueno <- lm(nota~horas_sueno, data=datos_limpios)
 modelo_piecewise_sueno<- segmented(modelo_lineal_sueno,seg.Z = ~horas_sueno, psi=6)
 summary(modelo_piecewise_sueno)
 ```
@@ -681,7 +681,7 @@ En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con u
 ##Bloque 5 Heterocedasticidad
 
 ```{r}
-modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares / 1000), data = datos_limpios) #trabajo parcial y curso buena pinta
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares / 1000)+trabajo_parcial+curso, data = datos_limpios) #trabajo parcial y curso buena pinta
 summary(modelo_bloque5)
 head(datos_limpios)
 ```
