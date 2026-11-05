@@ -681,9 +681,12 @@ En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con u
 ##Bloque 5 Heterocedasticidad
 
 ```{r}
-modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares / 1000)+trabajo_parcial+curso, data = datos_limpios) #trabajo parcial y curso buena pinta
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares /1000) + trabajo_parcial+curso, data = datos_limpios) #trabajo parcial y curso buena pinta
 summary(modelo_bloque5)
 head(datos_limpios)
+```
+```{r}
+
 ```
 
 

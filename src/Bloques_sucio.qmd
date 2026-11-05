@@ -440,3 +440,182 @@ print(comparacion_se)
 
 
 
+```{r}
+# Ajustar el modelo de regresión lineal
+modelo <- lm(nota ~ ., data = datos_limpios)
+
+# Ver el resumen del modelo (coeficientes, p-valores, R^2)
+summary(modelo)
+```
+```{r}
+library(tidyverse)
+
+datos_limpios %>%
+  dplyr::select(where(is.numeric)) %>%
+  pivot_longer(cols = -nota, names_to = "variable", values_to = "valor") %>%
+  ggplot(aes(x = valor, y = nota)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  facet_wrap(~ variable, scales = "free_x") +
+  theme_minimal() +
+  labs(title = "Relación de todas las variables contra 'nota'",
+       x = "Valor de la variable",
+       y = "Nota")
+```
+```{r}
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes +faltas, data = datos_limpios) 
+summary(modelo_bloque5)
+```
+```{r}
+# Extraer ajustados y residuos
+ajustados <- fitted(modelo_bloque5)
+residuos <- residuals(modelo_bloque5)
+
+# Graficar
+plot(ajustados, residuos,
+     main = "Residuos vs Valores Ajustados",
+     xlab = "Valores Ajustados (Predichos)",
+     ylab = "Residuos",
+     pch = 19, col = "steelblue")
+
+# Añadir línea horizontal de referencia en 0
+abline(h = 0, col = "red", lty = 2, lwd = 2)
+
+# Opcional: añadir curva de tendencia suavizada (loess)
+lines(lowess(ajustados, residuos), col = "darkgreen", lwd = 2)
+```
+Esta más o menos bien  (desarrollar)
+
+Apartado 2
+
+```{r}
+# Cargar la librería necesaria (instálala si no la tienes con install.packages("lmtest"))
+library(lmtest)
+
+# Aplicar el test de Breusch-Pagan a tu modelo
+bptest(modelo_bloque5)
+```
+Parece que tenemos homocedasticidad ya que no podemos rechazar la h0 que es la homocedasticidad.
+
+apartado 3
+```{r}
+library(tidyverse)
+
+# 1. Añadir los residuos y crear los 3 grupos de ansiedad
+datos_analisis <- datos_limpios %>%
+  mutate(
+    residuos = residuals(modelo_bloque5),
+    
+    # Opción recomendada: 3 grupos por cuantiles (tercioles)
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = quantile(ansiedad, probs = seq(0, 1, length.out = 4), na.rm = TRUE),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  )
+
+# 2. Calcular la varianza y desviación estándar de los residuos por grupo
+varianza_ansiedad <- datos_analisis %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n = n(),
+    rango_ansiedad = paste0("[", min(ansiedad), " - ", max(ansiedad), "]"),
+    varianza_residuos = var(residuos, na.rm = TRUE),
+    desv_estandar = sd(residuos, na.rm = TRUE)
+  )
+
+print(varianza_ansiedad)
+```
+
+
+```{r}
+datos_analisis <- datos_limpios %>%
+  mutate(
+    residuos = residuals(modelo_bloque5),
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = c(20, 43.3, 66.6, 90),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  )
+
+varianza_ansiedad <- datos_analisis %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n = n(),
+    varianza_residuos = var(residuos, na.rm = TRUE)
+  )
+
+print(varianza_ansiedad)
+```
+
+## revisar que salen al reves
+```{r}
+library(tidyverse)
+
+# 1. Crear los 3 grupos con los puntos de corte específicos
+datos_analisis <- datos_limpios %>%
+  mutate(
+    residuos = residuals(modelo_bloque5),
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = c(20, 43.3, 66.6, 90),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  )
+
+# 2. Contar personas y calcular varianza de residuos por grupo
+resultado <- datos_analisis %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n_personas = n(),
+    varianza_residuos = var(residuos, na.rm = TRUE)
+  )
+
+print(resultado)
+```
+
+```{r}
+# Histograma básico con R Base
+hist(datos_limpios$ansiedad,
+     main = "Distribución de la Variable Ansiedad",
+     xlab = "Nivel de Ansiedad",
+     ylab = "Frecuencia (Número de personas)",
+     col = "steelblue",
+     border = "white",
+     breaks = 30) # Ajusta el número de barras si lo deseas
+```
+```{r}
+datosfuefue<-datos_limpios$ansiedad
+shapiro.test(datosfuefue)
+```
+
+```{r}
+# 1. Cargar las librerías necesarias
+library(lmtest)
+library(sandwich)
+
+# 3. Obtener el resumen con errores estándar robustos (HC1 es el estándar por defecto tipo Stata)
+coeftest(modelo_bloque5, vcov = vcovHC(modelo_bloque5, type = "HC1"))
+```
+
+```{r}
+library(estimatr)
+
+modelo_robust <- lm_robust(nota ~ horas_estudio + IQ + uso_redes + faltas, 
+                           data = datos_limpios, 
+                           se_type = "HC1")
+
+summary(modelo_robust)
+```
+Apartado 5. falta comparar los errores de los coeficientes con y sin correcion de erroresrobusta
+
+#Bloque 6
+```{r}
+
+```
+
+
