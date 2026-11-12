@@ -695,4 +695,60 @@ plot(curva_roc,
 ```
 El auc, es de 0,58 por tanto no tiene capacidad discriminativa útil este modelo. 
 
-#Bloque 7 
+#Bloque 7 interacciones
+Apartado 1 -- > modelo interacción
+```{r}
+modelo_interacciones_horas_clases2 <- lm(nota ~ horas_estudio*clases_asistidas,data=datos_limpios)
+summary(modelo_interacciones_horas_clases2)
+```
+El modelo es significativo pero cada variable individualmente es mala
+
+
+Apartado2 
+
+```{r}
+# Instala el paquete si no lo tienes (solo una vez)
+library(ggeffects)
+library(ggplot2)
+```
+
+
+```{r}
+# Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
+pred_interaccion <- ggpredict(modelo_interacciones_horas_clases2, 
+                              terms = c("horas_estudio", "clases_asistidas"))
+
+plot(pred_interaccion) +
+  labs(title = "Interacción: Horas de estudio x Clases asistidas",
+       x = "Horas de estudio",
+       y = "Nota predicha",
+       color = "Clases asistidas") +
+  theme_minimal()
+```
+
+
+```{r}
+```
+Apartado 3
+```{r}
+modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ, 
+                  family = binomial(link = "logit"), 
+                  data = datos_limpios)
+
+# 2. Ver los resultados (coeficientes en log-odds, errores estándar y p-valores)
+summary(modelo_log_bloque7)
+```
+```{r}
+# Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
+pred_interaccion <- ggpredict(modelo_log_bloque7, 
+                              terms = c("horas_sueno", "IQ"))
+
+plot(pred_interaccion) +
+  labs(title = "Interacción: Horas de sueño x IQ",
+       x = "Horas de sueño",
+       y = "Aprobado",
+       color = "Clases asistidas") +
+  theme_minimal()
+```
+Apartado 4 --> interpretación
+#Bloque 8
