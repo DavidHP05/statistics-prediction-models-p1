@@ -614,8 +614,85 @@ summary(modelo_robust)
 Apartado 5. falta comparar los errores de los coeficientes con y sin correcion de erroresrobusta
 
 #Bloque 6
+Apartado 1. 
 ```{r}
+library(ggeffects)
+modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas, 
+                      family = poisson(link = "log"), 
+                      data = datos_limpios)
 
+# Ver los resultados (coeficientes, errores estándar y p-valores)
+summary(modelo_poisson)
+plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
+```
+Apartado2 ---> si hay sobre dispersion , justificar bien 
+
+Apartado 3 
+```{r}
+# 1. Cargar el paquete necesario (viene preinstalado en R)
+library(MASS)
+
+# 2. Ajustar el modelo Binomial Negativo
+modelo_nb <- glm.nb(faltas ~ uso_redes + clases_asistidas, data = datos_limpios)
+
+# 3. Ver la tabla de resultados
+summary(modelo_nb)
+
+# 4. Obtener las Razones de Tasas (IRR) e intervalos de confianza al 95%
+exp(cbind(IRR = coef(modelo_nb), confint(modelo_nb)))
 ```
 
 
+Apartado 4 --> binomial negativa tiene menos deviance que el poisson tal cual
+
+Apartado 5 
+```{r}
+# 1. Ajustar el modelo de regresión logística
+modelo_log_bloque6 <- glm(aprobado ~ horas_estudio + clases_asistidas, 
+                  family = binomial(link = "logit"), 
+                  data = datos_limpios)
+
+# 2. Ver los resultados (coeficientes en log-odds, errores estándar y p-valores)
+summary(modelo_log_bloque6)
+
+# 3. Calcular los Odds Ratios (OR) e intervalos de confianza al 95%
+exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
+```
+
+Apartado 6 interpretacion odd ratios
+```{r}
+exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
+```
+Horas_estudio en cada unidad que aumenta, aumenta en un 4.1% la probabilidad de estar aprobado.
+El otro al ser menor que uno , disminuye un 1,9 % la probabiidad de aprobar (Revisar)
+
+Apartado 7
+```{r}
+# 1. Instalar y cargar el paquete pROC (si no lo tienes instalado)
+# install.packages("pROC")
+library(pROC)
+
+# 2. Obtener las probabilidades predichas por tu modelo logístico
+probabilidades <- predict(modelo_log_bloque6, type = "response")
+
+# 3. Calcular el objeto ROC comparando la realidad (aprobado) vs predicción
+curva_roc <- roc(datos_limpios$aprobado, probabilidades)
+
+# 4. Mostrar el valor exacto del AUC en la consola
+auc(curva_roc)
+
+# 5. Graficar la curva ROC
+plot(curva_roc, 
+     col = "#2c7bb6", 
+     lwd = 3, 
+     main = "Curva ROC - Modelo Logístico (Aprobado)",
+     print.auc = TRUE,           # Imprime el valor del AUC dentro del gráfico
+     print.auc.x = 0.4,          # Posición horizontal del texto AUC
+     print.auc.y = 0.2,          # Posición vertical del texto AUC
+     legacy.axes = TRUE,         # Pone el eje X como 1 - Especificidad (de 0 a 1)
+     xlab = "1 - Especificidad (Tasa de Falsos Positivos)",
+     ylab = "Sensibilidad (Tasa de Verdaderos Positivos)")
+```
+El auc, es de 0,58 por tanto no tiene capacidad discriminativa útil este modelo. 
+
+#Bloque 7 
