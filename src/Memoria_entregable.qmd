@@ -35,7 +35,9 @@ library(lmtest) #librería para test de breuch homocedasticidad
 #bloque 5 errore robustos
 library(lmtest)
 library(sandwich)
-library(estimatr)
+library(estimatr) 
+#bloque 6
+library(ggeffects)
 
 datos <- read.csv("../data/students_A.csv")
 ```
@@ -802,3 +804,16 @@ Como era de esperar el estimate no varía entre el modelo de errores robustos y 
 Podemos apreciar así que al corregir por heterocedasticidad, los errores estándar de horas_estudio (que pasa de 0.007669 a 0.008550, una diferencia de +0.000881) y uso_redes (que pasa de 0.050722 a 0.053013, una diferencia de +0.002291) aumentan ligeramente, lo que indica que el modelo clásico subestimaba la incertidumbre de estas variables. Por el contrario, en faltas (que pasa de 0.006898 a 0.006088, una diferencia de -0.000810) e IQ (que pasa de 0.003290 a 0.003279, una diferencia de -0.000011) el error estándar disminuye ligeramente.
 
 #Bloque 6 Modelos GLM
+
+Apartado 1.	Ajusta un modelo de Poisson para: faltas ~ uso_redes + clases_asistidas.
+
+```{r}
+modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas, 
+                      family = poisson(link = "log"), 
+                      data = datos_limpios)
+summary(modelo_poisson)
+```
+```{r}
+plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
+```
+
