@@ -31,6 +31,12 @@ library(naniar)
 library(splines) #para el spline bloque 4
 library(segmented) #para el piecewise bloque 4
 library(dplyr)
+library(lmtest) #librería para test de breuch homocedasticidad
+#bloque 5 errore robustos
+library(lmtest)
+library(sandwich)
+library(estimatr)
+
 datos <- read.csv("../data/students_A.csv")
 ```
 
@@ -680,14 +686,119 @@ En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con u
 
 ##Bloque 5 Heterocedasticidad
 
+Apartado 1. Ajusta un modelo múltiple para nota y representa residuos vs. ajustados.
+
+Tras todo el estudio previo de nuestros datos en el EDA, hemos optado por tomar las variables horas_estudio, IQ, uso_redes y faltas para crear el modelo de este apartado. 
 ```{r}
-modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + ansiedad + I(ingresos_familiares /1000) + trabajo_parcial+curso, data = datos_limpios) #trabajo parcial y curso buena pinta
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes +faltas, data = datos_limpios) 
 summary(modelo_bloque5)
-head(datos_limpios)
+```
+Como podemos observar con el summary de nuestro modelo, a nivel general, este modelo explica un 45,6 % de la variabilidad. Además por el estadístico F y el p-valor del modelo, sabemos que este es estadísticamente significativo. Por otro lado a nivel individual, cada variable añadida a este modelo es estadísticamente significativa pues todos los p-valores de cada una, son inferiores a 0,05. 
+#Si queremos podemos poner los betas y que haces 
+
+```{r}
+# Extraer ajustados y residuos
+ajustados <- fitted(modelo_bloque5)
+residuos <- residuals(modelo_bloque5)
+
+# Graficar
+plot(ajustados, residuos,
+     main = "Residuos vs Valores Ajustados",
+     xlab = "Valores Ajustados (Predichos)",
+     ylab = "Residuos",
+     pch = 19, col = "steelblue")
+
+# Añadir línea horizontal de referencia en 0
+abline(h = 0, col = "red", lty = 2, lwd = 2)
+
+# Opcional: añadir curva de tendencia suavizada (loess)
+lines(lowess(ajustados, residuos), col = "darkgreen", lwd = 2)
+```
+El diagnóstico es positivo. En el gráfico Scale-Location, la línea es casi horizontal, lo que indica que la varianza de los residuos es estable a lo largo de los valores ajustados. Además la ligera curvatura en los extremos seguramente se deba a que la baja cantidad de muestras en los extremos haga que tengan mayor valor y por ende la línea tenga esa tendencia en los laterales. Seguiremos comprobando con el test de Breusch–Pagan en el siguiente apartado.
+
+Apartado 2.	Aplica el test de Breusch–Pagan al modelo.
+```{r}
+#Aplicamos el test de Breusch-Pagan a tu modelo
+bptest(modelo_bloque5)
+```
+El p-valor del test es de 0,4314 por lo que no podemos rechazar la hipótesis nula, la cual en este test era que hay Homocedasticidad. Por tanto no podemos rechazar que haya homocedasticidad. 
+
+Apartado 2 extra test de white
+```{r}
+white_resultado <- bptest(modelo_bloque5, ~ fitted(modelo_bloque5) + I(fitted(modelo_bloque5)^2))
+print(white_resultado)
+```
+Realizando el test de white vemos que el p-valor es inferior a 0,05 por lo que podríamos rechazar la hipótesis nula de homocedasticidad y tendríamos heterocedasticidad. 
+#Preguntar a victor <--
+
+Apartado 3.	Calcula la varianza de los residuos en tres grupos de ansiedad (baja, media, alta).
+
+Para dividir en grupos de aniedad podemos seguir dos enfoques, uno en el que dividamos según un sentido más clínico en el que tomaremos de referencia el intervalo, arriesgandonos a que los grupos salgan desiguales o uno más centrado en los cuantiles para que esté más equilibrado.
+
+Como en nuestro contexto los gastos están simulados lo haremos de ambas formas e interpretaremos ambos resultados. 
+```{r}
+# Añadimos los residuos y creamos los 3 grupos de ansiedad
+datos_analisis <- datos_limpios %>%
+  mutate(
+    residuos = residuals(modelo_bloque5),
+    
+    #3 grupos por cuantiles (tercioles)
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = quantile(ansiedad, probs = seq(0, 1, length.out = 4), na.rm = TRUE),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  )
+#Calculo de la varianza y desviación estándar
+varianza_ansiedad <- datos_analisis %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n = n(),
+    rango_ansiedad = paste0("[", min(ansiedad), " - ", max(ansiedad), "]"),
+    varianza_residuos = var(residuos, na.rm = TRUE),
+    desv_estandar = sd(residuos, na.rm = TRUE)
+  )
+
+print(varianza_ansiedad)
 ```
 ```{r}
+datos_analisis <- datos_limpios %>%
+  mutate(
+    residuos = residuals(modelo_bloque5),
+    grupo_ansiedad = cut(
+      ansiedad,
+      breaks = c(20, 43.3, 66.6, 90),
+      labels = c("baja", "media", "alta"),
+      include.lowest = TRUE
+    )
+  )
 
+varianza_ansiedad <- datos_analisis %>%
+  group_by(grupo_ansiedad) %>%
+  summarise(
+    n = n(),
+    varianza_residuos = var(residuos, na.rm = TRUE)
+  )
+
+print(varianza_ansiedad)
 ```
+Como podemos ver habiendo hecho los dos tipos de divisiones, al dividir por cuantiles, los grupos son más o menos del mismo tamaño, mientras que de la otra forma los grupos alta y baja son bastante más pequeños en comparación a media. La varianza con la división por cuantiles es muy similar en los 3 intervalos, mientras que en la división por nivel de ansiedad "clínico" vemos que aumenta la varianza para el grupo de ansiedad alta. Aun así este grupo está formado solo por 28 muestras, que no es muy representativo y este aumento podría deverse a valores atípicos o a mero azar por no tener suficiente representatividad. 
 
 
+Apartado 4.	Ajusta el mismo modelo, pero con errores robustos (HC).
 
+```{r}
+modelo_robusto <- lm_robust(nota ~ horas_estudio + IQ + uso_redes + faltas, 
+                           data = datos_limpios, 
+                           se_type = "HC1")
+summary(modelo_robusto)
+```
+El modelo con errores robustos, vemos que los p-valores individuales de las variables son menores a 0,05, por lo que confirmamos que los efectos de las variables sobre nota siguen siendo significativos a pesar de la heterocedasticidad que hemos detectado con el test de white. Este modelo explica un 45,6% de la variabilidad y es estadísticamente significativo a nivel global. 
+
+Apartado 5.	Compara los errores estándar de los coeficientes con y sin corrección robusta.
+
+Como era de esperar el estimate no varía entre el modelo de errores robustos y el multilineal que hicimos en el primer apartado, sin embargo menos en IQ en el que la variación del error estandar entre ambos modelos apenas se nota, las demás variables si subren cambios más significativos. 
+Podemos apreciar así que al corregir por heterocedasticidad, los errores estándar de horas_estudio (que pasa de 0.007669 a 0.008550, una diferencia de +0.000881) y uso_redes (que pasa de 0.050722 a 0.053013, una diferencia de +0.002291) aumentan ligeramente, lo que indica que el modelo clásico subestimaba la incertidumbre de estas variables. Por el contrario, en faltas (que pasa de 0.006898 a 0.006088, una diferencia de -0.000810) e IQ (que pasa de 0.003290 a 0.003279, una diferencia de -0.000011) el error estándar disminuye ligeramente.
+
+#Bloque 6 Modelos GLM
