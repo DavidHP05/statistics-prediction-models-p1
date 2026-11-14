@@ -812,8 +812,68 @@ modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas,
                       family = poisson(link = "log"), 
                       data = datos_limpios)
 summary(modelo_poisson)
+library(broom)
+tidy(modelo_poisson, exponentiate = TRUE, conf.int = TRUE)
 ```
+Vemos que las 2 variables tienen p-valores muy inferiores a 0,05, por tanto ambas son significativas de forma individual. Además la null deviance decrece significativamente al añadir nuestras variables (diferencia entre null y residual) por tanto el modelo mejora al incluir estas variables predictoras. 
+Por otro lado, los parámetros beta del summary vienen en escala logaritmica por lo que hemos tenido que hemos tenido que pasarlos a exponencial para poder interpretarlos con el IRR. Vemos que uso de redes nos da un IRR > 1 , en particular de 2,56, esto implica que por cada unidad que aumenta uso_redes, las faltas incrementan en un 156%. Por otro lado, clases_asistidas, nos da un IRR<1 aunque muy próximo a 1, en concreto de 0,9886 , por lo que por cada unidad de clases_asistidas faltas disminuye un 1,14%. 
 ```{r}
 plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
+```
+Aquí podemos ver como influye el efecto de nuestras variables, claramente el efecto de uso_redes sobre faltas es exponencial por el aumento que habíamos visto antes.  En cualo a las 3 líneas de clases_Asistidas, vemos como encaja respecto a lo que habíamos visto, a más asistencia, disminuyen las faltas, por eso la línea con más asistencia está debajo siempre de la que tienen menos. Aun así, las líneas están bastante juntas pues la disminución por unidad era minúscula (1,14%). 
+
+Apartado 2.	Comprueba si existe sobre-dispersión en este modelo.
+´
+Para contestar a si teníamos sobre-dispersión devemos tener que calcular el Estadístico de dispersión. 
+```{r}
+sum(residuals(modelo_poisson, type = "pearson")^2) / df.residual(modelo_poisson)
+```
+$$\hat{\phi} = \frac{X^2_{\text{Pearson}}}{n - p} =  \approx 3.9358$$
+Vemos que el estadístico nos da superior a 1, bastante además, por lo que concluimos que tenemos sobredispersión, por lo que deberemos interntar corregir esto, con el próximo apartado, pues porbaremos el modelo Binomial Negativo. 
+
+Apartado 3.	Ajusta un modelo NegBin para las mismas variables.
+```{r}
+library(MASS)
+modelo_nb <- glm.nb(faltas ~ uso_redes + clases_asistidas, data = datos_limpios)
+summary(modelo_nb)
+#Obtener las Razones de Tasas (IRR) e intervalos de confianza al 95%
+exp(cbind(IRR = coef(modelo_nb), confint(modelo_nb)))
+#estadístico de dispersión
+sum(residuals(modelo_nb, type = "pearson")^2) / df.residual(modelo_nb)
+```
+Vemos que el modelo binomial negativo, tiene los p-valores de las variables inferiores a 0,05 por lo que las variables siguen siendo significativas individualmente. El deviance residual decrece significativamente respecto el null. En cuanto a los IRR de las variables, podemos concluir que uso_redes genera un aumento del 236,5% por cada unidad y clases_asistidas genera una disminución del 1,2% por cada unidad. 
+
+El AIC ha disminuido respecto al modelo de poisson, por lo tanto el modelo binomial negativo tiene pinta de ser mejor. 
+
+Tenemos un $\theta=1,485$ , por tanto hay mucha sobredispersión al ser menor que 10. Esto nos confira que el modelo binomial negativo es más apropiado que poisson en este caso.
+
+Además el estadístico de dispersión para este modelo es de 1,12 que es muy cercana a uno, aunque sigue siendo mayor que 1 lo que indica sobredispersión, es un valor más próximo a 1, lo que es un indicador más de que este modelo funciona mejor efectivamente. 
+#Ns si es así el último parrafo de arriba 
+
+Apartado 4.	Compara devianzas de Poisson y NegBin.
+
+```{r}
+cat("Dispersión en Poisson (deviance/df.residual):", 
+    round(modelo_poisson$deviance / modelo_poisson$df.residual, 3), "\n")
+
+cat("Dispersión en NegBin (deviance/df.residual):", 
+    round(modelo_nb$deviance / modelo_nb$df.residual, 3), "\n")
+```
+Al ver los summary de los modelos ya veiamos que la deviance del modelo binomial negativo era inferior que el de poisson. Y si vemos los ratios de dispersión calculados ahora, vemos como en el modelo de poisson tenemos 3,7 siendo muestra de que hay sobredispersión, mientras que la del modelo binomial negativo es prácticamente 1 viendo que el modelo ha solucionado la sobredispersión respecto al otro modelo.
+
+Apartado 5.	Ajusta un modelo logístico para aprobado ~ horas_estudio + clases_asistidas.
+
+```{r}
+modelo_log_bloque6 <- glm(aprobado ~ horas_estudio + clases_asistidas, 
+                  family = binomial(link = "logit"), 
+                  data = datos_limpios)
+summary(modelo_log_bloque6)
+```
+
+
+Apartado 6.	Calcula e interpreta los odds ratios.
+```{r}
+# 3. Calcular los Odds Ratios (OR) e intervalos de confianza al 95%
+exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
 ```
 
