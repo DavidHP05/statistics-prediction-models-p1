@@ -58,7 +58,7 @@ cat("Mediana de las notas:", round(mediana_nota, 4), "\n")
 cat("Desviación típica de las notas:", round(desv_tipica_nota, 4), "\n")
 ```
 
-Apartado 2, el histograma de notas
+#### Apartado 2, el histograma de notas
 
 ```{r}
 ggplot(datos, aes(x = nota)) +
@@ -69,7 +69,7 @@ ggplot(datos, aes(x = nota)) +
   theme_minimal()
 ```
 
-Apartado 3, proporción de estudiantes por sexo
+#### Apartado 3, proporción de estudiantes por sexo
 
 ```{r}
 #Calcular la tabla de frecuencias absolutas
@@ -79,7 +79,7 @@ proporciones <- prop.table(conteo_sexo)
 print(proporciones)
 ```
 
-Apartado 4, diagrama de cajas se notas según el campus
+#### Apartado 4, diagrama de cajas se notas según el campus
 
 ```{r}
 ggplot(datos, aes(x = campus, y = nota, fill = campus)) +
@@ -91,7 +91,7 @@ ggplot(datos, aes(x = campus, y = nota, fill = campus)) +
   theme(legend.position = "none")
 ```
 
-Apartado 5, grafico de dispersión entre horas_studio y nota
+#### Apartado 5, grafico de dispersión entre horas_studio y nota
 
 ```{r}
 ggplot(datos, aes(x = horas_estudio, y = nota)) +
@@ -102,7 +102,7 @@ ggplot(datos, aes(x = horas_estudio, y = nota)) +
   theme_minimal()
 ```
 
-Apartado 6, matriz de correlaciones entre las variables numéricas
+#### Apartado 6, matriz de correlaciones entre las variables numéricas
 
 ```{r}
 #Seleccionamos las variables numéricas
@@ -234,7 +234,9 @@ datos_factor %>%
     y = "Valor del predictor"
   )
 ```
-Resumen de nuestros datos, que incluye mínimos, máximos, media, mediana y quartiles. 
+
+Resumen de nuestros datos, que incluye mínimos, máximos, media, mediana y quartiles.
+
 ```{r}
 summary(datos_factor)
 ```
@@ -243,18 +245,20 @@ summary(datos_factor)
 
 ## Bloque 2
 
-Este bloque consiste en ver como tratar los valores faltantes, que hemos visto que existen en el anterior bloque al salirnos algunos avisos. 
+Este bloque consiste en ver como tratar los valores faltantes, que hemos visto que existen en el anterior bloque al salirnos algunos avisos.
 
-Apartado 1, identificar las variables con variables faltantes.
-Para ello, haremos uso de la función dfSummary, que al resumirnos los datos, nos da también la cantidad de datos faltantes en cada variable.
+#### Apartado 1, identificar las variables con variables faltantes. Para ello, haremos uso de la función dfSummary, que al resumirnos los datos, nos da también la cantidad de datos faltantes en cada variable.
+
 ```{r}
 print(dfSummary(datos_factor),method = "render")
 ```
+
 Como podemos ver tenemos en 5 variables distintas que nos faltan 5 respuestas en cada una, un 1% de cada variable.
 
-Apartado 2, calcular la proporción de datos faltantes sobre el total de datos.
+#### Apartado 2, calcular la proporción de datos faltantes sobre el total de datos.
 
 Como ya vimos hay 5 variables a las que les faltan 5, pero hay que ver si coinciden en algún caso (que un mismo estudiante, le falte en más de una columna la respuesta)
+
 ```{r}
 #Total de filas (entradas)
 total_filas <- nrow(datos_factor)
@@ -268,8 +272,9 @@ cat("Filas con algún NA:", filas_con_na, "\n")
 cat("Proporción:", proporcion, "\n")
 cat("Porcentaje:", round(proporcion * 100, 2), "%\n")
 ```
-Apartado 3, imputación de media en IQ.
-Se nos pide que utilicemos el método de imputación por media sobre los valores faltantes de la variable IQ. Consiste en sustituir el NA por la media de esa variable. 
+
+#### Apartado 3, imputación de media en IQ. Se nos pide que utilicemos el método de imputación por media sobre los valores faltantes de la variable IQ. Consiste en sustituir el NA por la media de esa variable.
+
 ```{r}
 #Guardamos las filas donde hay huecos en iq
 posiciones_na_iq <- which(is.na(datos_factor$IQ))
@@ -280,7 +285,9 @@ datos_imputados_mediaiq <- datos_factor %>%
 #despues
 datos_imputados_mediaiq[posiciones_na_iq, ]
 ```
-Apartado 4, comparar histogramas
+
+#### Apartado 4, comparar histogramas
+
 ```{r}
 #Guardamos las filas donde hay huecos en iq
 posiciones_na_horas <- which(is.na(datos_factor$horas_estudio))
@@ -349,15 +356,12 @@ legend("topright",
        legend = c("Después (Imputado)", "Antes (Con NAs)"), 
        fill = c(rgb(0.2, 0.5, 0.8, 0.5), rgb(0.8, 0.2, 0.2, 0.5)))
 ```
+
 # Puse 3 formas de compararlo, hay que elegir que preferimos
 
-Apartado 5,	discute si es razonable asumir que los valores faltantes son MCAR. 
+#### Apartado 5, discute si es razonable asumir que los valores faltantes son MCAR.
 
-Para ello, vamos a difenciar los 3 tipos de datos faltantes principales
-<https://medium.com/@jeinffersonjbg/t%C3%A9cnicas-para-determinar-los-tipos-de-valores-faltantes-616f39271395>
-<https://rpubs.com/JairoAyala/Missing_data>
-Datos faltantes completamente aleatorios (MCAR): si se presentan de manera completamente aleatoria.La existencia de valores perdidos es independiente de los datos. 
-Datos faltantes aleatorios(MAR): si la presencia de valores faltantes en una variable esta relacionada con la presencia de valores en otra variable. La probabilidad de ser un dato faltante es la misma dentro de los grupos definidos por los datos observados.
+Para ello, vamos a difenciar los 3 tipos de datos faltantes principales [https://medium.com/\@jeinffersonjbg/t%C3%A9cnicas-para-determinar-los-tipos-de-valores-faltantes-616f39271395](https://medium.com/@jeinffersonjbg/t%C3%A9cnicas-para-determinar-los-tipos-de-valores-faltantes-616f39271395){.uri} <https://rpubs.com/JairoAyala/Missing_data> Datos faltantes completamente aleatorios (MCAR): si se presentan de manera completamente aleatoria.La existencia de valores perdidos es independiente de los datos. Datos faltantes aleatorios(MAR): si la presencia de valores faltantes en una variable esta relacionada con la presencia de valores en otra variable. La probabilidad de ser un dato faltante es la misma dentro de los grupos definidos por los datos observados.
 
 Datos faltantes no aleatorios (MNAR): si los valores faltantes dependen de un rango propio de la variable que los presenta. La probabilidad de ser un dato faltante se debe a razón desconocidas.
 
@@ -369,16 +373,17 @@ gg_miss_var(datos_factor)
 (justificar que da igual + ejemplo de codigos, nos quedamos con eliminar)
 
 Eliminamos las entradas
+
 ```{r}
 datos_limpios <- datos_factor %>% drop_na()
 ```
 
-
-
 ## Bloque 3. Regresión lineal simple y múltiple
 
-A continuación, ajustamos algunos modelos para nuestros datos. 
-Apartado 1. Ajustamos el modelo para notas sobre horas de estudio:
+A continuación, ajustamos algunos modelos para nuestros datos.
+
+#### Apartado 1. Ajustamos el modelo para notas sobre horas de estudio:
+
 ```{r}
 modelo_notas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
 summary(modelo_notas_horas)
@@ -386,14 +391,13 @@ summary(modelo_notas_horas)
 r_squared <- summary(modelo_notas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
-Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota, lo que puede tener sentido dentro de nuestro contexto.
-El p-valor es lo suficientemente pequeño en la variable (< 2.2e-16) para rechazar la hipótesis nula , y aceptar que hay una relación lineal. 
 
+Nuestro modelo estima que por cada aumento de una hora de estudio, el promedio de notas obtenido aumenta en 0.13 puntos. Además, para 0 horas de estudio, el intercepto calculado es un total de 2.47 puntos de nota, lo que puede tener sentido dentro de nuestro contexto. El p-valor es lo suficientemente pequeño en la variable (\< 2.2e-16) para rechazar la hipótesis nula , y aceptar que hay una relación lineal.
 
-Aun así, R^2 es algo pequeño pequeño. 0,35 y solo explica el 35% de la variabilidad total, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo.
-Además el estadístico F que mide el ratio entre variabilidad explicada vs no explicada es medianamente alto con un valor de 254.3, por lo que es un buen indicador de que hay relación entre las variable y al tener un p-valor < 2.2e-16 podemos decir que el modelo es significativo.
+Aun así, R\^2 es algo pequeño pequeño. 0,35 y solo explica el 35% de la variabilidad total, lo que nos puede estar indicando que hay más variables en juego para explicar el modelo. Además el estadístico F que mide el ratio entre variabilidad explicada vs no explicada es medianamente alto con un valor de 254.3, por lo que es un buen indicador de que hay relación entre las variable y al tener un p-valor \< 2.2e-16 podemos decir que el modelo es significativo.
 
-Apartado 2. Representar la recta ajustada sobre el diagrama de dispersión. 
+#### Apartado 2. Representar la recta ajustada sobre el diagrama de dispersión.
+
 ```{r}
 ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
   geom_point(alpha = 0.7) +
@@ -402,75 +406,67 @@ ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
        x = "Variable horas_estudio", y = "Variable nota") +
   theme_minimal()
 ```
-Con el gráfico podemos ver una tendencia a que según aumentan las horas de estudio, también lo hace la nota.
-Aun así, tenemos bastante dispersión a lo largo de la recta, por lo que como veremos más adelante,
-las horas de estudio no es lo único que afectará a nuestra variable nota.
 
-Apartado 3. 3.	Calcula el (R^2) del modelo simple anterior
+Con el gráfico podemos ver una tendencia a que según aumentan las horas de estudio, también lo hace la nota. Aun así, tenemos bastante dispersión a lo largo de la recta, por lo que como veremos más adelante, las horas de estudio no es lo único que afectará a nuestra variable nota.
+
+#### Apartado 3. Calcula el (R\^2) del modelo simple anterior
+
 ```{r}
 r_squared <- summary(modelo_notas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
-El R^2 es de 0,35 aproximadamente, por lo que según la definición del mismo, nos indica que la variabilidad
-total explicada por nuestro modelo es del 35%
 
+El R\^2 es de 0,35 aproximadamente, por lo que según la definición del mismo, nos indica que la variabilidad total explicada por nuestro modelo es del 35%
 
-Apartado 4. 4.	Ajusta el modelo múltiple: nota ~ horas_estudio + clases_asistidas + IQ
+Apartado 4. 4. Ajusta el modelo múltiple: nota \~ horas_estudio + clases_asistidas + IQ
 
 ```{r}
 #Ajuste del modelo de regresión lineal múltiple
 modelo_multiple <- lm(nota ~ horas_estudio + clases_asistidas + IQ, data = datos_limpios)
 summary(modelo_multiple)
 ```
-Según el modelo multilineal, cada variable tiene los siguientes efectos:
-Horas_estudio: por cada hora de estudio aumenta la nota 0,1299.
-clases_asistidas: por cada 1% de clases asistidas aumenta la nota 0,0075
-IQ:: por cada punto de IQ aumenta la nota 0,0255
-De primera mano parece que el porcentaje de asistencia es el que menos aporta a la nota por ahora.
-Además de que justo esa variable no tiene apenas diferencia de grado de magnitud entre el estimate y el error. Además de que el p valor es relativamente superior a 0,05 no podemos rechazar la hipótesis nula y es una variable que no es estadísticamente significativa. 
 
-Para las otras dos variables sin embargo parece que tanto tu error estimado y el p-valor, están en rangos que no generan preocupación. 
+Según el modelo multilineal, cada variable tiene los siguientes efectos: Horas_estudio: por cada hora de estudio aumenta la nota 0,1299. clases_asistidas: por cada 1% de clases asistidas aumenta la nota 0,0075 IQ:: por cada punto de IQ aumenta la nota 0,0255 De primera mano parece que el porcentaje de asistencia es el que menos aporta a la nota por ahora. Además de que justo esa variable no tiene apenas diferencia de grado de magnitud entre el estimate y el error. Además de que el p valor es relativamente superior a 0,05 no podemos rechazar la hipótesis nula y es una variable que no es estadísticamente significativa.
 
+Para las otras dos variables sin embargo parece que tanto tu error estimado y el p-valor, están en rangos que no generan preocupación.
 
-El R^2 ajustado es de 0,4193 por lo que nuestro modelo explica la variabilidad en un 41,93%. 
-EL estadístico F sigue siendo elevado y con p-valor < 2.2e-16, por lo que el modelo es globalmente significativo. 
+El R\^2 ajustado es de 0,4193 por lo que nuestro modelo explica la variabilidad en un 41,93%. EL estadístico F sigue siendo elevado y con p-valor \< 2.2e-16, por lo que el modelo es globalmente significativo.
 
-Apartado 5.	Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
+Apartado 5. Compara los coeficientes de horas_estudio en los modelos simple y múltiple.
 
 El coeficiente en el modelo lineal era de 0.132961 mientras que en el multilineal era de 0.129948. Con los errores 0.008337 y 0.007881 respectivamente.
 
-Vemos que con el multilineal aumentamos la precisión al disminuir el error, a la vez que el efecto que tiene la variable horas_estudio sobre nota también disminuye ligeramente, debido a que las otras variables iq y clases_asistidas también están haciendo su aporte. 
+Vemos que con el multilineal aumentamos la precisión al disminuir el error, a la vez que el efecto que tiene la variable horas_estudio sobre nota también disminuye ligeramente, debido a que las otras variables iq y clases_asistidas también están haciendo su aporte.
 
-Si nos fijamos en el R^2 vemos que entre el modelo lineal y el multilineal ha aumentado significativamente por lo que añadir estas dos nuevas varibales ha sido una mejora respecto al lineal simple. Aun así en el apartado anterior vimos que tenemos nuestras dudas sobre la variable clases_asistidas, por ello vamos a realizar el modelo solo con iq y las horas de estudio para comparar resultados.
+Si nos fijamos en el R\^2 vemos que entre el modelo lineal y el multilineal ha aumentado significativamente por lo que añadir estas dos nuevas varibales ha sido una mejora respecto al lineal simple. Aun así en el apartado anterior vimos que tenemos nuestras dudas sobre la variable clases_asistidas, por ello vamos a realizar el modelo solo con iq y las horas de estudio para comparar resultados.
 
-Apartado 6.	Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
+#### Apartado 6. Añade uso_redes al modelo múltiple. ¿Cómo cambia el ajuste?
+
 ```{r}
 #Añadimos la nueva variable a un nuevo modelo
 modelo_ampliado <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes, data = datos)
 summary(modelo_ampliado)
 ```
+
 La variable nueva uso de redes: por los resultados del modelo vemos que el uso de redes disminuye la nota, además de que el error tiene diferencias de orden de magnitud, lo que es buena señal.
 
-Cambios:
-Las variables horas_estudio e IQ aumentan ligeramente en su aporte por unidad a la nota, mientras que el aporte de la variable clases_asistidas se reduce.
+Cambios: Las variables horas_estudio e IQ aumentan ligeramente en su aporte por unidad a la nota, mientras que el aporte de la variable clases_asistidas se reduce.
 
-Por otro lado como era de esperar, al añadir una nueva variable el R^2 y el R^2 ajustado aumenta, aunque no en gran medida. 
-Mientras el estadístico F disminuye respecto al modelo anterior, aunque sigue manteniendose elevado. 
+Por otro lado como era de esperar, al añadir una nueva variable el R\^2 y el R\^2 ajustado aumenta, aunque no en gran medida. Mientras el estadístico F disminuye respecto al modelo anterior, aunque sigue manteniendose elevado.
 
-Apartado 7. 7.	Interpreta el efecto de tener trabajo_parcial en el modelo múltiple.
+#### Apartado 7. Interpreta el efecto de tener trabajo_parcial en el modelo múltiple.
 
 ```{r}
 #Añadimos la nueva variable al modelo anterior
 modelo_completo <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes + trabajo_parcial, data = datos_limpios)
 summary(modelo_completo)
 ```
-Por un lado, el estimate, nos dice que tener trabajo parcial disminuye la nota. Y al haberse añadido, han variado los estimados del resto de variables ligeramente. 
-Por otro lado, si analizamos el R^2 tomando en cuenta el modelo previo, vemos que tanto el R^2 como el R^2 ajustado apenas ha aumentado, por lo que añadir esta variable al modelo, no nos aporta un gran beneficio en la explicación de la varianza. Además de que añadir esta variable ha disminuido más el estadístico F. 
 
-#Extra: var clases_asistidas
+Por un lado, el estimate, nos dice que tener trabajo parcial disminuye la nota. Y al haberse añadido, han variado los estimados del resto de variables ligeramente. Por otro lado, si analizamos el R\^2 tomando en cuenta el modelo previo, vemos que tanto el R\^2 como el R\^2 ajustado apenas ha aumentado, por lo que añadir esta variable al modelo, no nos aporta un gran beneficio en la explicación de la varianza. Además de que añadir esta variable ha disminuido más el estadístico F.
 
-Hemos visto que en nuestros modelos, la variable clases_asistidas era problematica tanto por su aporte, su error y su p-valor. 
-Vamos a hacer un pequeño análisis para ver si quizá es una variable candidata a ser eliminada. 
+####Extra: var clases_asistidas
+
+Hemos visto que en nuestros modelos, la variable clases_asistidas era problematica tanto por su aporte, su error y su p-valor. Vamos a hacer un pequeño análisis para ver si quizá es una variable candidata a ser eliminada.
 
 ```{r}
 plot(datos_limpios$nota, datos_limpios$clases_asistidas,
@@ -481,19 +477,19 @@ lines(lowess(datos_limpios$nota, datos_limpios$clases_asistidas),
       lwd = 2)
 
 ```
-Podemos ver que para todo tipo de notas hay una gran dispersión en porcentaje de clases asistidas. 
-Veamos ahora un modelo entre esta variable y la nota.
+
+Podemos ver que para todo tipo de notas hay una gran dispersión en porcentaje de clases asistidas. Veamos ahora un modelo entre esta variable y la nota.
+
 ```{r}
 modelo_clases_asistidas <- lm(nota ~ clases_asistidas, data = datos_limpios)
 summary(modelo_clases_asistidas)
 ```
-El R^2 es diminuto por lo que no explica nada de la variabilidad total. Además, con solo esta variable el estadístico F es casi 1 y tiene un p-valor grande. Por tanto concluimos que esta variable no es significativa para nuestra variable respuesta nota. 
 
+El R\^2 es diminuto por lo que no explica nada de la variabilidad total. Además, con solo esta variable el estadístico F es casi 1 y tiene un p-valor grande. Por tanto concluimos que esta variable no es significativa para nuestra variable respuesta nota.
 
+##Bloque 4 No linealidades y piecewise
 
-#Bloque 4 No linealidades y piecewise
-
-Apartado 1. 1.	Ajusta: nota ~ horas_estudio + I(horas_estudio^2) y comparar con el modelo lineal simple.
+#### Apartado 1. Ajusta: nota \~ horas_estudio + I(horas_estudio\^2) y comparar con el modelo lineal simple.
 
 ```{r}
 #Modelos y summarys
@@ -502,41 +498,35 @@ modelo_horas_cuadrado <- lm(nota ~ horas_estudio + I(horas_estudio^2), data = da
 summary(modelo_horas_estudio)
 summary(modelo_horas_cuadrado)
 ```
-Por ahora nos podemos fijar en el coeficiente de la variable horas_estudio y en el R^2. 
-El modelo lineal tiene un R^2 ajustado mayor al modelo lineal. Aunque no dejan de ser bastante parecidos entre si, siendo en el lineal un 0,35 aproximadamente y en el otro un 0,36. Por lo que el cambio de pasar de tener en cuenta la variable horas_estudio a tenerla en cuenta junto a si misma al cuadrado no nos aporta una explicabilidad mayor. 
-La diferencia más notable es en el coeficiente de horas de estudio, ya que en el modelo lineal aporta 0,13 y en el segundo modelo se duplica pasando a ser 0,27. 
 
-Para continuar con nuestro análisis, vamos a realizar un test AIC y un ANOVa entre los modelos. 
+Por ahora nos podemos fijar en el coeficiente de la variable horas_estudio y en el R\^2. El modelo lineal tiene un R\^2 ajustado mayor al modelo lineal. Aunque no dejan de ser bastante parecidos entre si, siendo en el lineal un 0,35 aproximadamente y en el otro un 0,36. Por lo que el cambio de pasar de tener en cuenta la variable horas_estudio a tenerla en cuenta junto a si misma al cuadrado no nos aporta una explicabilidad mayor. La diferencia más notable es en el coeficiente de horas de estudio, ya que en el modelo lineal aporta 0,13 y en el segundo modelo se duplica pasando a ser 0,27.
+
+Para continuar con nuestro análisis, vamos a realizar un test AIC y un ANOVa entre los modelos.
+
 ```{r}
 #Comparaciones adicionales
 AIC(modelo_horas_estudio,modelo_horas_cuadrado)
 anova(modelo_horas_estudio,modelo_horas_cuadrado)
 ```
-Realizamos un test AIC, que mide la pérdida de información relativa al ajustar un modelo a un conjunto de datos, para ver que modelo parece ser mejor.
-Análisis resultados del AIC:
-- Como vemos el modelo lineal estima 3 parámetros (el intercepto, el coeficiente de la variable y el error), mientras que en el que incluye el cuadrado se gasta un grado más de libertad. 
--La medida AIC suele ser mejor a cuanto más pequeña sea, por lo que el modelo que incluye la variable al cuadrado parece ser mejor, además la diferencia entre sus índices AIC, es de casi 10.
 
-También realizamos un ANOVA, que es una prueba estadística que sirve para determinar si añadir una o más variables a un modelo estadístico mejora significativamente su capacidad para explicar los datos, en comparación con un modelo más simple. 
-Análisis resultados anova: 
--13.546 es la diferencia entre la suma de cuadrados de ambos modelos por lo que añadir esa variable cuadrática, disminuye esta suma. 
--Tenemos un estadístico F de 12 con un p-valor inferior al 0,05 por lo que podemos rechazar la hipótesis nula de que ambos modelos son iguales y queda claro que añadirla mejora el modelo. 
+Realizamos un test AIC, que mide la pérdida de información relativa al ajustar un modelo a un conjunto de datos, para ver que modelo parece ser mejor. Análisis resultados del AIC: - Como vemos el modelo lineal estima 3 parámetros (el intercepto, el coeficiente de la variable y el error), mientras que en el que incluye el cuadrado se gasta un grado más de libertad. -La medida AIC suele ser mejor a cuanto más pequeña sea, por lo que el modelo que incluye la variable al cuadrado parece ser mejor, además la diferencia entre sus índices AIC, es de casi 10.
 
-Concluimos así que a pesar de que añadir la variable al cuadrado no aporta explicabilidad (R^2 ajustado) apenas, si que mejora el modelo como vimos con el test AIC
-#Asegurar con victor que esta conclusión es correcta. 
+También realizamos un ANOVA, que es una prueba estadística que sirve para determinar si añadir una o más variables a un modelo estadístico mejora significativamente su capacidad para explicar los datos, en comparación con un modelo más simple. Análisis resultados anova: -13.546 es la diferencia entre la suma de cuadrados de ambos modelos por lo que añadir esa variable cuadrática, disminuye esta suma. -Tenemos un estadístico F de 12 con un p-valor inferior al 0,05 por lo que podemos rechazar la hipótesis nula de que ambos modelos son iguales y queda claro que añadirla mejora el modelo.
 
-Apartado 2.Introduce uso_redes como variable dicotómica (≤3h vs >3h) y ajústala.
+Concluimos así que a pesar de que añadir la variable al cuadrado no aporta explicabilidad (R\^2 ajustado) apenas, si que mejora el modelo como vimos con el test AIC #Asegurar con victor que esta conclusión es correcta.
+
+#### Apartado 2.Introduce uso_redes como variable dicotómica (≤3h vs \>3h) y ajústala.
 
 ```{r}
 #I(ifelse(uso_redes > 3, 1, 0)) vuelve a la variable dicotómica 
 modelo_bloque4_uso_redes <- lm(nota ~ horas_estudio + I(horas_estudio^2) + I(ifelse(uso_redes > 3, 1, 0)), data = datos_limpios)
 summary(modelo_bloque4_uso_redes)
 ```
-Vemos que añadir la variable uso de redes aumenta el R^2 ajustado, pasando de 0,36 a 0,39. Además los p-valores de las 3 variables por si solas son suficientemente pequeños. Además el estadistico F es grande y su p-valor pequeño, por lo que el modelo es significativo también a nivel global. 
 
-Apartado 3. Representa nota frente a ansiedad con suavizado LOESS.
-El suavizado LOESS es un método de regresión no paramétrico que sirve para ajustar una curva suave a través de datos dispersos, revelando tendencias sin imponer una forma matemática global fija. 
-Vamos, en este caso, a aplicar este método a la variable ansiedad frente a nota. 
+Vemos que añadir la variable uso de redes aumenta el R\^2 ajustado, pasando de 0,36 a 0,39. Además los p-valores de las 3 variables por si solas son suficientemente pequeños. Además el estadistico F es grande y su p-valor pequeño, por lo que el modelo es significativo también a nivel global.
+
+#### Apartado 3. Representa nota frente a ansiedad con suavizado LOESS.
+El suavizado LOESS es un método de regresión no paramétrico que sirve para ajustar una curva suave a través de datos dispersos, revelando tendencias sin imponer una forma matemática global fija. Vamos, en este caso, a aplicar este método a la variable ansiedad frente a nota.
 
 ```{r}
 modelo_ansiedad_LOESS <- lm(nota ~ ansiedad, data = datos_limpios)
@@ -555,8 +545,8 @@ ggplot(modelo_ansiedad_LOESS, aes(x = nota, y = ansiedad)) +
 
 ```
 
-Otro enfoque haciendo que el modelo sea loess en vez de solo el gráfico. 
-#ver cual es mejor
+Otro enfoque haciendo que el modelo sea loess en vez de solo el gráfico. #ver cual es mejor
+
 ```{r}
 #Calculamos el modelo loess
 modelo_loess <- loess(nota ~ ansiedad, data = datos_limpios, span = 0.75)
@@ -570,7 +560,8 @@ ggplot(datos_limpios, aes(x = ansiedad, y = nota)) +
   theme_minimal() +
   labs(title = "LOESS predicho a partir del objeto de modelo")
 ```
-Apartado 4.	Ajusta un spline sobre horas_estudio y compáralo con el modelo cuadrático.
+
+#### Apartado 4. Ajusta un spline sobre horas_estudio y compáralo con el modelo cuadrático.
 
 ```{r}
 #Ajuste del modelo cuadrático
@@ -612,23 +603,23 @@ AIC(modelo_cuadratico, modelo_spline)
 anova(modelo_cuadratico, modelo_spline)
 
 ```
-En la gráfica de ggplot2, vemos que ambas líneas se parecen bastante lo que nos coincide con la información que nos da el anova y el AIC.
-Por un lado el AIC, nos da un valor casi identico con una diferencia de poco más de 1 unidad, por lo que nos indica que ambos modelos aportan prácticamente la misma información, aportando un poco más el modelo cuadrático al tener un índice menor. 
 
-Por el otro lado, el ANOVa, nos da un F por debajo de uno y con un p-valor de 0,5, por lo que no podemos rechazar la hipótesis nula de que ambos modelos aportan la misma información. 
+En la gráfica de ggplot2, vemos que ambas líneas se parecen bastante lo que nos coincide con la información que nos da el anova y el AIC. Por un lado el AIC, nos da un valor casi identico con una diferencia de poco más de 1 unidad, por lo que nos indica que ambos modelos aportan prácticamente la misma información, aportando un poco más el modelo cuadrático al tener un índice menor.
 
+Por el otro lado, el ANOVa, nos da un F por debajo de uno y con un p-valor de 0,5, por lo que no podemos rechazar la hipótesis nula de que ambos modelos aportan la misma información.
 
+#### Apartado 5. Ajusta un modelo piecewise en horas_sueno (\<6 vs ≥6) para nota.
 
-Apartado 5.	Ajusta un modelo piecewise en horas_sueno (<6 vs ≥6) para nota.
 ```{r}
 modelo_lineal_sueno <- lm(nota~horas_sueno, data=datos_limpios)
 modelo_piecewise_sueno<- segmented(modelo_lineal_sueno,seg.Z = ~horas_sueno, psi=6)
 summary(modelo_piecewise_sueno)
 ```
-Vemos que el R^2 ajustado es negativo, por lo que este modelo está penalizando bastante el incluir horas de sueño con la variable segmentada del piecewise, es un indicador de que esta variable no explica la variabilidad. 
-#Porque sale p-valor NA
 
-Apartado 6.	Evalúa el AIC entre modelos lineal, cuadrático y piecewise.
+Vemos que el R\^2 ajustado es negativo, por lo que este modelo está penalizando bastante el incluir horas de sueño con la variable segmentada del piecewise, es un indicador de que esta variable no explica la variabilidad. #Porque sale p-valor NA
+
+#### Apartado 6. Evalúa el AIC entre modelos lineal, cuadrático y piecewise.
+
 ```{r}
 #modelos lineal y cuadrático con horas_sueno
 modelo_lineal_sueno <- lm(nota~horas_sueno, data=datos_limpios)
@@ -637,19 +628,20 @@ summary(modelo_cuadratico_sueno)
 summary(modelo_lineal_sueno)
 AIC(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
 ```
-Por los resultados del AIC, el mejor modelo es el lineal al tener el menos índice. Además aunque entre el lineal y el cuadrático hay menos diferencia y la mejoría podría ser menos notable y depender de más factores para saber con que modelo quedarnos. La diferencia entre el lineal y el piecewise si que es más moderada, teniendo una diferencia de casi 4 unidades. 
 
-Vamos a complementar la comparación con un anova.
-####Comparación extra, anova
+Por los resultados del AIC, el mejor modelo es el lineal al tener el menos índice. Además aunque entre el lineal y el cuadrático hay menos diferencia y la mejoría podría ser menos notable y depender de más factores para saber con que modelo quedarnos. La diferencia entre el lineal y el piecewise si que es más moderada, teniendo una diferencia de casi 4 unidades.
+
+Vamos a complementar la comparación con un anova. ####Comparación extra, anova
+
 ```{r}
 anova(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
 ```
-Como podemos observar en los resultados del ANOVA, los p-valores del modelo cuadrático y piecewise son muy superiores a 0,05, por lo que no podemos rechazar sus hipótesis nulas, en el caso del cuadrático que el coeficiente de esa variable sea 0, y en el piecewise que la diferencia entre las pendientes de los tramos segmentados sea 0. 
-También el error RSS apenas cambia en los modelos. 
 
-Ya con esto, queda bastante claro que los modelos más complejos no aportan suficiente como para preferirlos. Si siguiesemos el principio de la navaja de Ockham, nos quedaríamos con el modelo lineal al ser el más sencillo (sumado a que tiene el menor índice AIC). 
+Como podemos observar en los resultados del ANOVA, los p-valores del modelo cuadrático y piecewise son muy superiores a 0,05, por lo que no podemos rechazar sus hipótesis nulas, en el caso del cuadrático que el coeficiente de esa variable sea 0, y en el piecewise que la diferencia entre las pendientes de los tramos segmentados sea 0. También el error RSS apenas cambia en los modelos.
 
-Apartado 7.	Representa gráficamente las predicciones piecewise frente a las observaciones reales.
+Ya con esto, queda bastante claro que los modelos más complejos no aportan suficiente como para preferirlos. Si siguiesemos el principio de la navaja de Ockham, nos quedaríamos con el modelo lineal al ser el más sencillo (sumado a que tiene el menor índice AIC).
+
+#### Apartado 7. Representa gráficamente las predicciones piecewise frente a las observaciones reales.
 
 ```{r}
 #Crear un grid de puntos para predicciones continuas
@@ -684,19 +676,21 @@ ggplot(datos_limpios, aes(x = horas_sueno, y = nota)) +
   ) +
   theme_minimal()
 ```
-En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con un incremento de la línea del modelo piecewise en el punto de quiebre (8.62) calculado al realizar el modelo en el apartado 5. Y tal y como apuntaba el análisis las líneas tienen prácticamente la misma tendencia. 
+
+En el gráfico vemos que las 3 líneas de los modelos se parecen bastante, con un incremento de la línea del modelo piecewise en el punto de quiebre (8.62) calculado al realizar el modelo en el apartado 5. Y tal y como apuntaba el análisis las líneas tienen prácticamente la misma tendencia.
 
 ##Bloque 5 Heterocedasticidad
 
-Apartado 1. Ajusta un modelo múltiple para nota y representa residuos vs. ajustados.
+#### Apartado 1. Ajusta un modelo múltiple para nota y representa residuos vs. ajustados.
 
-Tras todo el estudio previo de nuestros datos en el EDA, hemos optado por tomar las variables horas_estudio, IQ, uso_redes y faltas para crear el modelo de este apartado. 
+Tras todo el estudio previo de nuestros datos en el EDA, hemos optado por tomar las variables horas_estudio, IQ, uso_redes y faltas para crear el modelo de este apartado.
+
 ```{r}
 modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes +faltas, data = datos_limpios) 
 summary(modelo_bloque5)
 ```
-Como podemos observar con el summary de nuestro modelo, a nivel general, este modelo explica un 45,6 % de la variabilidad. Además por el estadístico F y el p-valor del modelo, sabemos que este es estadísticamente significativo. Por otro lado a nivel individual, cada variable añadida a este modelo es estadísticamente significativa pues todos los p-valores de cada una, son inferiores a 0,05. 
-#Si queremos podemos poner los betas y que haces 
+
+Como podemos observar con el summary de nuestro modelo, a nivel general, este modelo explica un 45,6 % de la variabilidad. Además por el estadístico F y el p-valor del modelo, sabemos que este es estadísticamente significativo. Por otro lado a nivel individual, cada variable añadida a este modelo es estadísticamente significativa pues todos los p-valores de cada una, son inferiores a 0,05. #Si queremos podemos poner los betas y que haces
 
 ```{r}
 # Extraer ajustados y residuos
@@ -716,28 +710,33 @@ abline(h = 0, col = "red", lty = 2, lwd = 2)
 # Opcional: añadir curva de tendencia suavizada (loess)
 lines(lowess(ajustados, residuos), col = "darkgreen", lwd = 2)
 ```
+
 El diagnóstico es positivo. En el gráfico Scale-Location, la línea es casi horizontal, lo que indica que la varianza de los residuos es estable a lo largo de los valores ajustados. Además la ligera curvatura en los extremos seguramente se deba a que la baja cantidad de muestras en los extremos haga que tengan mayor valor y por ende la línea tenga esa tendencia en los laterales. Seguiremos comprobando con el test de Breusch–Pagan en el siguiente apartado.
 
-Apartado 2.	Aplica el test de Breusch–Pagan al modelo.
+#### Apartado 2. Aplica el test de Breusch–Pagan al modelo.
+
 ```{r}
 #Aplicamos el test de Breusch-Pagan a tu modelo
 bptest(modelo_bloque5)
 ```
-El p-valor del test es de 0,4314 por lo que no podemos rechazar la hipótesis nula, la cual en este test era que hay Homocedasticidad. Por tanto no podemos rechazar que haya homocedasticidad. 
 
-Apartado 2 extra test de white
+El p-valor del test es de 0,4314 por lo que no podemos rechazar la hipótesis nula, la cual en este test era que hay Homocedasticidad. Por tanto no podemos rechazar que haya homocedasticidad.
+
+#### Apartado 2 extra test de white
+
 ```{r}
 white_resultado <- bptest(modelo_bloque5, ~ fitted(modelo_bloque5) + I(fitted(modelo_bloque5)^2))
 print(white_resultado)
 ```
-Realizando el test de white vemos que el p-valor es inferior a 0,05 por lo que podríamos rechazar la hipótesis nula de homocedasticidad y tendríamos heterocedasticidad. 
-#Preguntar a victor <--
 
-Apartado 3.	Calcula la varianza de los residuos en tres grupos de ansiedad (baja, media, alta).
+Realizando el test de white vemos que el p-valor es inferior a 0,05 por lo que podríamos rechazar la hipótesis nula de homocedasticidad y tendríamos heterocedasticidad. #Preguntar a victor \<--
+
+#### Apartado 3. Calcula la varianza de los residuos en tres grupos de ansiedad (baja, media, alta).
 
 Para dividir en grupos de aniedad podemos seguir dos enfoques, uno en el que dividamos según un sentido más clínico en el que tomaremos de referencia el intervalo, arriesgandonos a que los grupos salgan desiguales o uno más centrado en los cuantiles para que esté más equilibrado.
 
-Como en nuestro contexto los gastos están simulados lo haremos de ambas formas e interpretaremos ambos resultados. 
+Como en nuestro contexto los gastos están simulados lo haremos de ambas formas e interpretaremos ambos resultados.
+
 ```{r}
 # Añadimos los residuos y creamos los 3 grupos de ansiedad
 datos_analisis <- datos_limpios %>%
@@ -764,6 +763,7 @@ varianza_ansiedad <- datos_analisis %>%
 
 print(varianza_ansiedad)
 ```
+
 ```{r}
 datos_analisis <- datos_limpios %>%
   mutate(
@@ -785,10 +785,10 @@ varianza_ansiedad <- datos_analisis %>%
 
 print(varianza_ansiedad)
 ```
-Como podemos ver habiendo hecho los dos tipos de divisiones, al dividir por cuantiles, los grupos son más o menos del mismo tamaño, mientras que de la otra forma los grupos alta y baja son bastante más pequeños en comparación a media. La varianza con la división por cuantiles es muy similar en los 3 intervalos, mientras que en la división por nivel de ansiedad "clínico" vemos que aumenta la varianza para el grupo de ansiedad alta. Aun así este grupo está formado solo por 28 muestras, que no es muy representativo y este aumento podría deverse a valores atípicos o a mero azar por no tener suficiente representatividad. 
 
+Como podemos ver habiendo hecho los dos tipos de divisiones, al dividir por cuantiles, los grupos son más o menos del mismo tamaño, mientras que de la otra forma los grupos alta y baja son bastante más pequeños en comparación a media. La varianza con la división por cuantiles es muy similar en los 3 intervalos, mientras que en la división por nivel de ansiedad "clínico" vemos que aumenta la varianza para el grupo de ansiedad alta. Aun así este grupo está formado solo por 28 muestras, que no es muy representativo y este aumento podría deverse a valores atípicos o a mero azar por no tener suficiente representatividad.
 
-Apartado 4.	Ajusta el mismo modelo, pero con errores robustos (HC).
+#### Apartado 4. Ajusta el mismo modelo, pero con errores robustos (HC).
 
 ```{r}
 modelo_robusto <- lm_robust(nota ~ horas_estudio + IQ + uso_redes + faltas, 
@@ -796,16 +796,16 @@ modelo_robusto <- lm_robust(nota ~ horas_estudio + IQ + uso_redes + faltas,
                            se_type = "HC1")
 summary(modelo_robusto)
 ```
-El modelo con errores robustos, vemos que los p-valores individuales de las variables son menores a 0,05, por lo que confirmamos que los efectos de las variables sobre nota siguen siendo significativos a pesar de la heterocedasticidad que hemos detectado con el test de white. Este modelo explica un 45,6% de la variabilidad y es estadísticamente significativo a nivel global. 
 
-Apartado 5.	Compara los errores estándar de los coeficientes con y sin corrección robusta.
+El modelo con errores robustos, vemos que los p-valores individuales de las variables son menores a 0,05, por lo que confirmamos que los efectos de las variables sobre nota siguen siendo significativos a pesar de la heterocedasticidad que hemos detectado con el test de white. Este modelo explica un 45,6% de la variabilidad y es estadísticamente significativo a nivel global.
 
-Como era de esperar el estimate no varía entre el modelo de errores robustos y el multilineal que hicimos en el primer apartado, sin embargo menos en IQ en el que la variación del error estandar entre ambos modelos apenas se nota, las demás variables si subren cambios más significativos. 
-Podemos apreciar así que al corregir por heterocedasticidad, los errores estándar de horas_estudio (que pasa de 0.007669 a 0.008550, una diferencia de +0.000881) y uso_redes (que pasa de 0.050722 a 0.053013, una diferencia de +0.002291) aumentan ligeramente, lo que indica que el modelo clásico subestimaba la incertidumbre de estas variables. Por el contrario, en faltas (que pasa de 0.006898 a 0.006088, una diferencia de -0.000810) e IQ (que pasa de 0.003290 a 0.003279, una diferencia de -0.000011) el error estándar disminuye ligeramente.
+#### Apartado 5. Compara los errores estándar de los coeficientes con y sin corrección robusta.
 
-#Bloque 6 Modelos GLM
+Como era de esperar el estimate no varía entre el modelo de errores robustos y el multilineal que hicimos en el primer apartado, sin embargo menos en IQ en el que la variación del error estandar entre ambos modelos apenas se nota, las demás variables si subren cambios más significativos. Podemos apreciar así que al corregir por heterocedasticidad, los errores estándar de horas_estudio (que pasa de 0.007669 a 0.008550, una diferencia de +0.000881) y uso_redes (que pasa de 0.050722 a 0.053013, una diferencia de +0.002291) aumentan ligeramente, lo que indica que el modelo clásico subestimaba la incertidumbre de estas variables. Por el contrario, en faltas (que pasa de 0.006898 a 0.006088, una diferencia de -0.000810) e IQ (que pasa de 0.003290 a 0.003279, una diferencia de -0.000011) el error estándar disminuye ligeramente.
 
-Apartado 1.	Ajusta un modelo de Poisson para: faltas ~ uso_redes + clases_asistidas.
+##Bloque 6 Modelos GLM
+
+#### Apartado 1. Ajusta un modelo de Poisson para: faltas \~ uso_redes + clases_asistidas.
 
 ```{r}
 modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas, 
@@ -815,23 +815,26 @@ summary(modelo_poisson)
 library(broom)
 tidy(modelo_poisson, exponentiate = TRUE, conf.int = TRUE)
 ```
-Vemos que las 2 variables tienen p-valores muy inferiores a 0,05, por tanto ambas son significativas de forma individual. Además la null deviance decrece significativamente al añadir nuestras variables (diferencia entre null y residual) por tanto el modelo mejora al incluir estas variables predictoras. 
-Por otro lado, los parámetros beta del summary vienen en escala logaritmica por lo que hemos tenido que hemos tenido que pasarlos a exponencial para poder interpretarlos con el IRR. Vemos que uso de redes nos da un IRR > 1 , en particular de 2,56, esto implica que por cada unidad que aumenta uso_redes, las faltas incrementan en un 156%. Por otro lado, clases_asistidas, nos da un IRR<1 aunque muy próximo a 1, en concreto de 0,9886 , por lo que por cada unidad de clases_asistidas faltas disminuye un 1,14%. 
+
+Vemos que las 2 variables tienen p-valores muy inferiores a 0,05, por tanto ambas son significativas de forma individual. Además la null deviance decrece significativamente al añadir nuestras variables (diferencia entre null y residual) por tanto el modelo mejora al incluir estas variables predictoras. Por otro lado, los parámetros beta del summary vienen en escala logaritmica por lo que hemos tenido que hemos tenido que pasarlos a exponencial para poder interpretarlos con el IRR. Vemos que uso de redes nos da un IRR \> 1 , en particular de 2,56, esto implica que por cada unidad que aumenta uso_redes, las faltas incrementan en un 156%. Por otro lado, clases_asistidas, nos da un IRR\<1 aunque muy próximo a 1, en concreto de 0,9886 , por lo que por cada unidad de clases_asistidas faltas disminuye un 1,14%.
+
 ```{r}
 plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
 ```
-Aquí podemos ver como influye el efecto de nuestras variables, claramente el efecto de uso_redes sobre faltas es exponencial por el aumento que habíamos visto antes.  En cualo a las 3 líneas de clases_Asistidas, vemos como encaja respecto a lo que habíamos visto, a más asistencia, disminuyen las faltas, por eso la línea con más asistencia está debajo siempre de la que tienen menos. Aun así, las líneas están bastante juntas pues la disminución por unidad era minúscula (1,14%). 
 
-Apartado 2.	Comprueba si existe sobre-dispersión en este modelo.
-´
-Para contestar a si teníamos sobre-dispersión devemos tener que calcular el Estadístico de dispersión. 
+Aquí podemos ver como influye el efecto de nuestras variables, claramente el efecto de uso_redes sobre faltas es exponencial por el aumento que habíamos visto antes. En cualo a las 3 líneas de clases_Asistidas, vemos como encaja respecto a lo que habíamos visto, a más asistencia, disminuyen las faltas, por eso la línea con más asistencia está debajo siempre de la que tienen menos. Aun así, las líneas están bastante juntas pues la disminución por unidad era minúscula (1,14%).
+
+#### Apartado 2. Comprueba si existe sobre-dispersión en este modelo. 
+Para contestar a si teníamos sobre-dispersión devemos tener que calcular el Estadístico de dispersión.
+
 ```{r}
 sum(residuals(modelo_poisson, type = "pearson")^2) / df.residual(modelo_poisson)
 ```
-$$\hat{\phi} = \frac{X^2_{\text{Pearson}}}{n - p} =  \approx 3.9358$$
-Vemos que el estadístico nos da superior a 1, bastante además, por lo que concluimos que tenemos sobredispersión, por lo que deberemos interntar corregir esto, con el próximo apartado, pues porbaremos el modelo Binomial Negativo. 
 
-Apartado 3.	Ajusta un modelo NegBin para las mismas variables.
+$$\hat{\phi} = \frac{X^2_{\text{Pearson}}}{n - p} =  \approx 3.9358$$ Vemos que el estadístico nos da superior a 1, bastante además, por lo que concluimos que tenemos sobredispersión, por lo que deberemos interntar corregir esto, con el próximo apartado, pues porbaremos el modelo Binomial Negativo.
+
+#### Apartado 3. Ajusta un modelo NegBin para las mismas variables.
+
 ```{r}
 library(MASS)
 modelo_nb <- glm.nb(faltas ~ uso_redes + clases_asistidas, data = datos_limpios)
@@ -841,16 +844,16 @@ exp(cbind(IRR = coef(modelo_nb), confint(modelo_nb)))
 #estadístico de dispersión
 sum(residuals(modelo_nb, type = "pearson")^2) / df.residual(modelo_nb)
 ```
-Vemos que el modelo binomial negativo, tiene los p-valores de las variables inferiores a 0,05 por lo que las variables siguen siendo significativas individualmente. El deviance residual decrece significativamente respecto el null. En cuanto a los IRR de las variables, podemos concluir que uso_redes genera un aumento del 236,5% por cada unidad y clases_asistidas genera una disminución del 1,2% por cada unidad. 
 
-El AIC ha disminuido respecto al modelo de poisson, por lo tanto el modelo binomial negativo tiene pinta de ser mejor. 
+Vemos que el modelo binomial negativo, tiene los p-valores de las variables inferiores a 0,05 por lo que las variables siguen siendo significativas individualmente. El deviance residual decrece significativamente respecto el null. En cuanto a los IRR de las variables, podemos concluir que uso_redes genera un aumento del 236,5% por cada unidad y clases_asistidas genera una disminución del 1,2% por cada unidad.
+
+El AIC ha disminuido respecto al modelo de poisson, por lo tanto el modelo binomial negativo tiene pinta de ser mejor.
 
 Tenemos un $\theta=1,485$ , por tanto hay mucha sobredispersión al ser menor que 10. Esto nos confira que el modelo binomial negativo es más apropiado que poisson en este caso.
 
-Además el estadístico de dispersión para este modelo es de 1,12 que es muy cercana a uno, aunque sigue siendo mayor que 1 lo que indica sobredispersión, es un valor más próximo a 1, lo que es un indicador más de que este modelo funciona mejor efectivamente. 
-#Ns si es así el último parrafo de arriba 
+Además el estadístico de dispersión para este modelo es de 1,12 que es muy cercana a uno, aunque sigue siendo mayor que 1 lo que indica sobredispersión, es un valor más próximo a 1, lo que es un indicador más de que este modelo funciona mejor efectivamente. #Ns si es así el último parrafo de arriba
 
-Apartado 4.	Compara devianzas de Poisson y NegBin.
+#### Apartado 4. Compara devianzas de Poisson y NegBin.
 
 ```{r}
 cat("Dispersión en Poisson (deviance/df.residual):", 
@@ -859,9 +862,10 @@ cat("Dispersión en Poisson (deviance/df.residual):",
 cat("Dispersión en NegBin (deviance/df.residual):", 
     round(modelo_nb$deviance / modelo_nb$df.residual, 3), "\n")
 ```
+
 Al ver los summary de los modelos ya veiamos que la deviance del modelo binomial negativo era inferior que el de poisson. Y si vemos los ratios de dispersión calculados ahora, vemos como en el modelo de poisson tenemos 3,7 siendo muestra de que hay sobredispersión, mientras que la del modelo binomial negativo es prácticamente 1 viendo que el modelo ha solucionado la sobredispersión respecto al otro modelo.
 
-Apartado 5.	Ajusta un modelo logístico para aprobado ~ horas_estudio + clases_asistidas.
+Apartado 5. Ajusta un modelo logístico para aprobado \~ horas_estudio + clases_asistidas.
 
 ```{r}
 modelo_log_bloque6 <- glm(aprobado ~ horas_estudio + clases_asistidas, 
@@ -870,10 +874,95 @@ modelo_log_bloque6 <- glm(aprobado ~ horas_estudio + clases_asistidas,
 summary(modelo_log_bloque6)
 ```
 
+Viendo el summary del modelo, podemos apreciar que la variable clases_asistidas no es estadisticamente significativo pues su p-valor es de 0,13. Mientras tanto horas_estudio si lo es con un p-valor de 0,0419. Vemos que la deviance no decrece apenas por lo que podemos suponer que el modelo no mejora mucho añadiendo estas variables y no explica mucho la variabilidad.
 
-Apartado 6.	Calcula e interpreta los odds ratios.
+#### Apartado 6. Calcula e interpreta los odds ratios.
+
 ```{r}
-# 3. Calcular los Odds Ratios (OR) e intervalos de confianza al 95%
 exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
 ```
 
+Viendo los OR, los cuales son definidos como $\text{OR} = e^{\beta}$, siendo $\beta$ los estimate del summary anterior. Podemos interpretar que Horas_estudio en cada unidad que aumenta, tiene el efecto de aumentar en un 4.13% los odds de estar aprobado.Que aumenten los odds implica que la proporción de aprobados frente a suspensos crece, por cada alumno que suspende, hay cada vez más alumnos que aprueban. Mientras que clases_asistidas, disminuye un 1,84 % los odds de aprobar por cada unidad.
+
+#### Apartado 7. Representa la curva ROC del modelo logístico y calcula el AUC.
+
+```{r}
+library(pROC)
+#Obtener las probabilidades predichas por tu modelo logístico
+probabilidades <- predict(modelo_log_bloque6, type = "response")
+# ROC comparando la realidad (aprobado) vs predicción
+curva_roc <- roc(datos_limpios$aprobado, probabilidades)
+auc(curva_roc)
+
+plot(curva_roc, 
+     col = "#2c7bb6", 
+     lwd = 3, 
+     main = "Curva ROC - Modelo Logístico (Aprobado)",
+     print.auc = TRUE,           # Imprime el valor del AUC dentro del gráfico
+     print.auc.x = 0.4,          # Posición horizontal del texto AUC
+     print.auc.y = 0.2,          # Posición vertical del texto AUC
+     legacy.axes = TRUE,         # Pone el eje X como 1 - Especificidad (de 0 a 1)
+     xlab = "1 - Especificidad (Tasa de Falsos Positivos)",
+     ylab = "Sensibilidad (Tasa de Verdaderos Positivos)")
+```
+
+Vemos que la curca que nos sale se parece a una línea diagonal de 45 grados, no que no es una muy buena señal y es un indicador de que este modelo no tiene capacidad discriminativa. Terminamos de concluir que este modelo no tiene capacidad discriminativa pues el valor del AUC es de 0,582, encontrandose en el rango de no tener capacidad discriminativa útil.
+
+##Bloque 7 Interacciones
+
+#### Apartado 1.	Ajusta un modelo para nota ~ horas_estudio * clases_asistidas.
+```{r}
+modelo_interacciones_horas_clases<- lm(nota ~ horas_estudio*clases_asistidas,data=datos_limpios)
+summary(modelo_interacciones_horas_clases)
+```
+Cuando las variables son 0, el estimado en la nota es de 4,8. El p-valor global del modelo es muy inferior a 0,05, por lo que el modelo parece ser estadísticamente significativo, aun así individualmente cada variable y su interacción, no lo son pues todas tienen p-valores mayores a 0,05 y tienen problemas entre el estimado y el error estimado. Por el R^2 ajustado sabemos que el modelo explica un 35,46% de la variabilidad total. 
+
+#### Apartado 2.	Representa la interacción en un gráfico de líneas (nota vs horas_estudio a distintos niveles de asistencia).
+
+```{r}
+library(ggeffects)
+library(ggplot2)
+#Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
+pred_interaccion <- ggpredict(modelo_interacciones_horas_clases, 
+                              terms = c("horas_estudio", "clases_asistidas"))
+
+plot(pred_interaccion) +
+  labs(title = "Interacción: Horas de estudio x Clases asistidas",
+       x = "Horas de estudio",
+       y = "Nota predicha",
+       color = "Clases asistidas") +
+  theme_minimal()
+```
+Vemos que las tres rectas tienen pendiente positiva, lo que confirma que, independientemente de la asistencia, estudiar más horas siempre mejora la nota predicha. Vemos que la recta verde, correspondiente a los que más asisten a clase, es la más pronunciada, por lo que podemos apreciar que en la interacción, los alumnos que más asisten a clase se benefician más a partir de ciertas horas de estudio. Aun así tenemos tramos donde se solapan completamente y donde se invierten y los alumnos con más asistencia están por debajo de alumnos con menos asistencia, aun así esto tramos tienen intervalos de confianza más solapados aun. 
+
+Coherencia con el p-valor ($0.0632$) de la interacción: El hecho de que los intervalos de confianza sombreados se solapen en gran parte del recorrido explica visualmente por qué la interacción en el summary resultó tener un p-valor = 0.0632, justo por encima del umbral del 0.05.
+
+####Apartado 3.	Ajusta un modelo logístico para aprobado ~ IQ * horas_sueno.
+
+```{r}
+modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ, 
+                  family = binomial(link = "logit"), 
+                  data = datos_limpios)
+summary(modelo_log_bloque7)
+exp(cbind(OR = coef(modelo_log_bloque7), confint(modelo_log_bloque7)))
+```
+Vemos que el modelo no es nada util, esto lo podemos ver tanto en que la deviance apenas baja al añadir las variables como que tanto las variables como la interacción tienen un p-valor altísimo, distando completamente del 0,05. 
+
+Si interpretamos los odds, horas_sueno aumenta un 3,39% los odds por cada unidad, el IQ un 1,41% y la interacción un 0,1% lo cual es bastante despreciable. 
+
+####Apartado 4.	Interpreta el efecto combinado de IQ y sueño en la probabilidad de aprobar.
+
+```{r}
+# Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
+pred_interaccion <- ggpredict(modelo_log_bloque7, 
+                              terms = c("horas_sueno", "IQ"))
+
+plot(pred_interaccion) +
+  labs(title = "Interacción: Horas de sueño x IQ",
+       x = "Horas de sueño",
+       y = "Aprobado",
+       color = "Clases asistidas") +
+  theme_minimal()
+```
+No existe evidencia estadísticamente significativa de un efecto combinado (interacción) entre el IQ y las horas de sueño sobre la probabilidad de aprobar, p-valor=0,915.
+Además si tenemos en cuenta el Odds Ratio (OR = 1.0011), un OR tan cercano a 1 significa que el efecto multiplicativo conjunto es neutro, es decir, dormir más horas no potencia ni reduce el efecto que tiene el IQ sobre el aprobado y viceversa.
