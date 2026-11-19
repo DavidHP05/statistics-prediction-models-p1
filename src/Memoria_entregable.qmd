@@ -526,6 +526,7 @@ summary(modelo_bloque4_uso_redes)
 Vemos que añadir la variable uso de redes aumenta el R\^2 ajustado, pasando de 0,36 a 0,39. Además los p-valores de las 3 variables por si solas son suficientemente pequeños. Además el estadistico F es grande y su p-valor pequeño, por lo que el modelo es significativo también a nivel global.
 
 #### Apartado 3. Representa nota frente a ansiedad con suavizado LOESS.
+
 El suavizado LOESS es un método de regresión no paramétrico que sirve para ajustar una curva suave a través de datos dispersos, revelando tendencias sin imponer una forma matemática global fija. Vamos, en este caso, a aplicar este método a la variable ansiedad frente a nota.
 
 ```{r}
@@ -824,7 +825,8 @@ plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
 
 Aquí podemos ver como influye el efecto de nuestras variables, claramente el efecto de uso_redes sobre faltas es exponencial por el aumento que habíamos visto antes. En cualo a las 3 líneas de clases_Asistidas, vemos como encaja respecto a lo que habíamos visto, a más asistencia, disminuyen las faltas, por eso la línea con más asistencia está debajo siempre de la que tienen menos. Aun así, las líneas están bastante juntas pues la disminución por unidad era minúscula (1,14%).
 
-#### Apartado 2. Comprueba si existe sobre-dispersión en este modelo. 
+#### Apartado 2. Comprueba si existe sobre-dispersión en este modelo.
+
 Para contestar a si teníamos sobre-dispersión devemos tener que calcular el Estadístico de dispersión.
 
 ```{r}
@@ -910,14 +912,16 @@ Vemos que la curca que nos sale se parece a una línea diagonal de 45 grados, no
 
 ##Bloque 7 Interacciones
 
-#### Apartado 1.	Ajusta un modelo para nota ~ horas_estudio * clases_asistidas.
+#### Apartado 1. Ajusta un modelo para nota \~ horas_estudio \* clases_asistidas.
+
 ```{r}
 modelo_interacciones_horas_clases<- lm(nota ~ horas_estudio*clases_asistidas,data=datos_limpios)
 summary(modelo_interacciones_horas_clases)
 ```
-Cuando las variables son 0, el estimado en la nota es de 4,8. El p-valor global del modelo es muy inferior a 0,05, por lo que el modelo parece ser estadísticamente significativo, aun así individualmente cada variable y su interacción, no lo son pues todas tienen p-valores mayores a 0,05 y tienen problemas entre el estimado y el error estimado. Por el R^2 ajustado sabemos que el modelo explica un 35,46% de la variabilidad total. 
 
-#### Apartado 2.	Representa la interacción en un gráfico de líneas (nota vs horas_estudio a distintos niveles de asistencia).
+Cuando las variables son 0, el estimado en la nota es de 4,8. El p-valor global del modelo es muy inferior a 0,05, por lo que el modelo parece ser estadísticamente significativo, aun así individualmente cada variable y su interacción, no lo son pues todas tienen p-valores mayores a 0,05 y tienen problemas entre el estimado y el error estimado. Por el R\^2 ajustado sabemos que el modelo explica un 35,46% de la variabilidad total.
+
+#### Apartado 2. Representa la interacción en un gráfico de líneas (nota vs horas_estudio a distintos niveles de asistencia).
 
 ```{r}
 library(ggeffects)
@@ -933,11 +937,12 @@ plot(pred_interaccion) +
        color = "Clases asistidas") +
   theme_minimal()
 ```
-Vemos que las tres rectas tienen pendiente positiva, lo que confirma que, independientemente de la asistencia, estudiar más horas siempre mejora la nota predicha. Vemos que la recta verde, correspondiente a los que más asisten a clase, es la más pronunciada, por lo que podemos apreciar que en la interacción, los alumnos que más asisten a clase se benefician más a partir de ciertas horas de estudio. Aun así tenemos tramos donde se solapan completamente y donde se invierten y los alumnos con más asistencia están por debajo de alumnos con menos asistencia, aun así esto tramos tienen intervalos de confianza más solapados aun. 
+
+Vemos que las tres rectas tienen pendiente positiva, lo que confirma que, independientemente de la asistencia, estudiar más horas siempre mejora la nota predicha. Vemos que la recta verde, correspondiente a los que más asisten a clase, es la más pronunciada, por lo que podemos apreciar que en la interacción, los alumnos que más asisten a clase se benefician más a partir de ciertas horas de estudio. Aun así tenemos tramos donde se solapan completamente y donde se invierten y los alumnos con más asistencia están por debajo de alumnos con menos asistencia, aun así esto tramos tienen intervalos de confianza más solapados aun.
 
 Coherencia con el p-valor ($0.0632$) de la interacción: El hecho de que los intervalos de confianza sombreados se solapen en gran parte del recorrido explica visualmente por qué la interacción en el summary resultó tener un p-valor = 0.0632, justo por encima del umbral del 0.05.
 
-####Apartado 3.	Ajusta un modelo logístico para aprobado ~ IQ * horas_sueno.
+####Apartado 3. Ajusta un modelo logístico para aprobado \~ IQ \* horas_sueno.
 
 ```{r}
 modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ, 
@@ -946,11 +951,12 @@ modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ,
 summary(modelo_log_bloque7)
 exp(cbind(OR = coef(modelo_log_bloque7), confint(modelo_log_bloque7)))
 ```
-Vemos que el modelo no es nada util, esto lo podemos ver tanto en que la deviance apenas baja al añadir las variables como que tanto las variables como la interacción tienen un p-valor altísimo, distando completamente del 0,05. 
 
-Si interpretamos los odds, horas_sueno aumenta un 3,39% los odds por cada unidad, el IQ un 1,41% y la interacción un 0,1% lo cual es bastante despreciable. 
+Vemos que el modelo no es nada util, esto lo podemos ver tanto en que la deviance apenas baja al añadir las variables como que tanto las variables como la interacción tienen un p-valor altísimo, distando completamente del 0,05.
 
-####Apartado 4.	Interpreta el efecto combinado de IQ y sueño en la probabilidad de aprobar.
+Si interpretamos los odds, horas_sueno aumenta un 3,39% los odds por cada unidad, el IQ un 1,41% y la interacción un 0,1% lo cual es bastante despreciable.
+
+####Apartado 4. Interpreta el efecto combinado de IQ y sueño en la probabilidad de aprobar.
 
 ```{r}
 # Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
@@ -964,5 +970,5 @@ plot(pred_interaccion) +
        color = "Clases asistidas") +
   theme_minimal()
 ```
-No existe evidencia estadísticamente significativa de un efecto combinado (interacción) entre el IQ y las horas de sueño sobre la probabilidad de aprobar, p-valor=0,915.
-Además si tenemos en cuenta el Odds Ratio (OR = 1.0011), un OR tan cercano a 1 significa que el efecto multiplicativo conjunto es neutro, es decir, dormir más horas no potencia ni reduce el efecto que tiene el IQ sobre el aprobado y viceversa.
+
+No existe evidencia estadísticamente significativa de un efecto combinado (interacción) entre el IQ y las horas de sueño sobre la probabilidad de aprobar, p-valor=0,915. Además si tenemos en cuenta el Odds Ratio (OR = 1.0011), un OR tan cercano a 1 significa que el efecto multiplicativo conjunto es neutro, es decir, dormir más horas no potencia ni reduce el efecto que tiene el IQ sobre el aprobado y viceversa.

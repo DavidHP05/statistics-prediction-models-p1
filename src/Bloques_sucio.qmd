@@ -100,7 +100,6 @@ datos_factor <- datos%>%mutate_if(is.character, as.factor)
 table(datos_factor$sexo, useNA = 'always')
 ```
 
-
 Ahora veamos un resumen global de los datos
 
 ```{r}
@@ -108,7 +107,9 @@ summary(datos_factor)
 library(summarytools)
 print(dfSummary(datos_factor),method = "render")
 ```
-Proporcion 
+
+Proporcion
+
 ```{r}
 # 1. Total de filas (entradas)
 total_filas <- nrow(datos_factor)
@@ -125,7 +126,9 @@ cat("Filas con algún NA:", filas_con_na, "\n")
 cat("Proporción:", proporcion, "\n")
 cat("Porcentaje:", round(proporcion * 100, 2), "%\n")
 ```
+
 Imputaciones
+
 ```{r}
 total_filas_con_na <- sum(!complete.cases(datos))
 print(total_filas_con_na)
@@ -151,7 +154,9 @@ imp <- mice(datos_factor, m = 20, method = "cart", maxit = 10, seed = 123)
 datos_imputados_arbol <- complete(imp, 1)
 datos_imputados_arbol[posiciones_na,]
 ```
+
 Histogramas y gráficos de dispersion
+
 ```{r}
 hist(datos_factor$IQ,
      main = "Histograma de IQ con NA",
@@ -172,10 +177,12 @@ hist(datos_imputados_arbol$IQ,
      col = "steelblue",
      border = "white")
 ```
+
 ```{r}
 library(naniar)
 mcar_test(datos_factor)
 ```
+
 ```{r}
 plot(x = datos_imputados_arbol$uso_redes, 
      y = datos_imputados_arbol$nota,
@@ -202,6 +209,7 @@ plot(x = datos_imputados_arbol$uso_redes,
 # 4. (Opcional) Leyenda para identificar los puntos imputados/faltantes
 
 ```
+
 ```{r}
 library(visdat)
 library(naniar)
@@ -209,15 +217,12 @@ vis_miss(datos_factor)
 gg_miss_var(datos_factor)
 ```
 
-
-
-
 ```{r}
 datos_limpios <- datos_factor %>% drop_na()
 ```
 
-Bloque 3
-Apartados 1 y 3
+Bloque 3 Apartados 1 y 3
+
 ```{r}
 modelo_noas_horas <- lm(nota ~ horas_estudio, data = datos_limpios)
 summary(modelo_noas_horas)
@@ -225,6 +230,7 @@ summary(modelo_noas_horas)
 r_squared <- summary(modelo_noas_horas)$r.squared
 cat("\nR²:", round(r_squared, 3))
 ```
+
 ```{r}
 
 # Visualizar los datos
@@ -235,7 +241,6 @@ ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
        x = "Variable horas_estudio", y = "Variable nota") +
   theme_minimal()
 ```
-
 
 ```{r}
 # 1. Ajuste del modelo de regresión lineal múltiple
@@ -262,6 +267,7 @@ modelo_completo <- lm(nota ~ horas_estudio + clases_asistidas + IQ + uso_redes +
 summary(modelo_completo)
 
 ```
+
 (Revisar seguramente este recogido a estas alturas trabajo parcial en horas asistidas correlacion 0,5 entre ambas además)
 
 Bloque 4
@@ -275,6 +281,7 @@ modelo_horas_cuadrado <- lm(nota ~ horas_estudio + I(horas_estudio^2), data = da
 summary(modelo_horas_cuadrado)
 
 ```
+
 ```{r}
 
 # Ajustar el modelo horas de estudio + uso_redes
@@ -306,6 +313,7 @@ ggplot(modelo_ansiedad_LOESS, aes(x = nota, y = ansiedad)) +
   theme_classic(base_size = 12)
 
 ```
+
 ```{r}
 library(splines)
 
@@ -333,8 +341,8 @@ AIC(modelo_cuadratico, modelo_spline)
 anova(modelo_cuadratico, modelo_spline)
 
 ```
-P-valor alto no podemo concluir que uno sea mejor que otro estadísticamente.
-Encima AIC casi igual.
+
+P-valor alto no podemo concluir que uno sea mejor que otro estadísticamente. Encima AIC casi igual.
 
 ```{r}
 library(segmented)
@@ -381,14 +389,13 @@ ggplot(datos_limpios, aes(x = horas_sueno, y = nota)) +
 
 ```
 
-
-
 ```{r}
 AIC(modelo_lineal_sueno,modelo_cuadratico_sueno, modelo_piecewise_sueno)
 
 ```
 
 ##Bloque 5
+
 ```{r}
 library(lmtest)
 install.packages("sandwich")
@@ -438,8 +445,6 @@ print(comparacion_se)
 
 ```
 
-
-
 ```{r}
 # Ajustar el modelo de regresión lineal
 modelo <- lm(nota ~ ., data = datos_limpios)
@@ -447,6 +452,7 @@ modelo <- lm(nota ~ ., data = datos_limpios)
 # Ver el resumen del modelo (coeficientes, p-valores, R^2)
 summary(modelo)
 ```
+
 ```{r}
 library(tidyverse)
 
@@ -462,10 +468,12 @@ datos_limpios %>%
        x = "Valor de la variable",
        y = "Nota")
 ```
+
 ```{r}
 modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes +faltas, data = datos_limpios) 
 summary(modelo_bloque5)
 ```
+
 ```{r}
 # Extraer ajustados y residuos
 ajustados <- fitted(modelo_bloque5)
@@ -484,7 +492,8 @@ abline(h = 0, col = "red", lty = 2, lwd = 2)
 # Opcional: añadir curva de tendencia suavizada (loess)
 lines(lowess(ajustados, residuos), col = "darkgreen", lwd = 2)
 ```
-Esta más o menos bien  (desarrollar)
+
+Esta más o menos bien (desarrollar)
 
 Apartado 2
 
@@ -495,9 +504,11 @@ library(lmtest)
 # Aplicar el test de Breusch-Pagan a tu modelo
 bptest(modelo_bloque5)
 ```
+
 Parece que tenemos homocedasticidad ya que no podemos rechazar la h0 que es la homocedasticidad.
 
 apartado 3
+
 ```{r}
 library(tidyverse)
 
@@ -528,7 +539,6 @@ varianza_ansiedad <- datos_analisis %>%
 print(varianza_ansiedad)
 ```
 
-
 ```{r}
 datos_analisis <- datos_limpios %>%
   mutate(
@@ -552,6 +562,7 @@ print(varianza_ansiedad)
 ```
 
 ## revisar que salen al reves
+
 ```{r}
 library(tidyverse)
 
@@ -588,6 +599,7 @@ hist(datos_limpios$ansiedad,
      border = "white",
      breaks = 30) # Ajusta el número de barras si lo deseas
 ```
+
 ```{r}
 datosfuefue<-datos_limpios$ansiedad
 shapiro.test(datosfuefue)
@@ -611,10 +623,11 @@ modelo_robust <- lm_robust(nota ~ horas_estudio + IQ + uso_redes + faltas,
 
 summary(modelo_robust)
 ```
+
 Apartado 5. falta comparar los errores de los coeficientes con y sin correcion de erroresrobusta
 
-#Bloque 6
-Apartado 1. 
+#Bloque 6 Apartado 1.
+
 ```{r}
 library(ggeffects)
 modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas, 
@@ -625,9 +638,11 @@ modelo_poisson <- glm(faltas ~ uso_redes + clases_asistidas,
 summary(modelo_poisson)
 plot(ggpredict(modelo_poisson, terms = c("uso_redes", "clases_asistidas")))
 ```
-Apartado2 ---> si hay sobre dispersion , justificar bien 
 
-Apartado 3 
+Apartado2 ---\> si hay sobre dispersion , justificar bien
+
+Apartado 3
+
 ```{r}
 # 1. Cargar el paquete necesario (viene preinstalado en R)
 library(MASS)
@@ -642,10 +657,10 @@ summary(modelo_nb)
 exp(cbind(IRR = coef(modelo_nb), confint(modelo_nb)))
 ```
 
+Apartado 4 --\> binomial negativa tiene menos deviance que el poisson tal cual
 
-Apartado 4 --> binomial negativa tiene menos deviance que el poisson tal cual
+Apartado 5
 
-Apartado 5 
 ```{r}
 # 1. Ajustar el modelo de regresión logística
 modelo_log_bloque6 <- glm(aprobado ~ horas_estudio + clases_asistidas, 
@@ -660,13 +675,15 @@ exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
 ```
 
 Apartado 6 interpretacion odd ratios
+
 ```{r}
 exp(cbind(OR = coef(modelo_log_bloque6), confint(modelo_log_bloque6)))
 ```
-Horas_estudio en cada unidad que aumenta, aumenta en un 4.1% la probabilidad de estar aprobado.
-El otro al ser menor que uno , disminuye un 1,9 % la probabiidad de aprobar (Revisar)
+
+Horas_estudio en cada unidad que aumenta, aumenta en un 4.1% la probabilidad de estar aprobado. El otro al ser menor que uno , disminuye un 1,9 % la probabiidad de aprobar (Revisar)
 
 Apartado 7
+
 ```{r}
 # 1. Instalar y cargar el paquete pROC (si no lo tienes instalado)
 # install.packages("pROC")
@@ -693,25 +710,25 @@ plot(curva_roc,
      xlab = "1 - Especificidad (Tasa de Falsos Positivos)",
      ylab = "Sensibilidad (Tasa de Verdaderos Positivos)")
 ```
-El auc, es de 0,58 por tanto no tiene capacidad discriminativa útil este modelo. 
 
-#Bloque 7 interacciones
-Apartado 1 -- > modelo interacción
+El auc, es de 0,58 por tanto no tiene capacidad discriminativa útil este modelo.
+
+#Bloque 7 interacciones Apartado 1 -- \> modelo interacción
+
 ```{r}
 modelo_interacciones_horas_clases2 <- lm(nota ~ horas_estudio*clases_asistidas,data=datos_limpios)
 summary(modelo_interacciones_horas_clases2)
 ```
+
 El modelo es significativo pero cada variable individualmente es mala
 
-
-Apartado2 
+Apartado2
 
 ```{r}
 # Instala el paquete si no lo tienes (solo una vez)
 library(ggeffects)
 library(ggplot2)
 ```
-
 
 ```{r}
 # Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
@@ -726,10 +743,11 @@ plot(pred_interaccion) +
   theme_minimal()
 ```
 
-
 ```{r}
 ```
+
 Apartado 3
+
 ```{r}
 modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ, 
                   family = binomial(link = "logit"), 
@@ -738,6 +756,7 @@ modelo_log_bloque7 <- glm(aprobado ~ horas_sueno*IQ,
 # 2. Ver los resultados (coeficientes en log-odds, errores estándar y p-valores)
 summary(modelo_log_bloque7)
 ```
+
 ```{r}
 # Calcular predicciones para 3 niveles de clases asistidas (-1 DE, Media, +1 DE)
 pred_interaccion <- ggpredict(modelo_log_bloque7, 
@@ -750,5 +769,5 @@ plot(pred_interaccion) +
        color = "Clases asistidas") +
   theme_minimal()
 ```
-Apartado 4 --> interpretación
-#Bloque 8
+
+Apartado 4 --\> interpretación #Bloque 8
