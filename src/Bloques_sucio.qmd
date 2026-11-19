@@ -843,6 +843,29 @@ ggplot(datos_limpios, aes(x = beca, y = nota)) +
 ```
 Hemos metido la variable beca en nuestro mejor modelo hasta el momento, y aparentemente, con un p valor de 0.237, y un Estimate de 0.117, deducimos que realmente esta variable no causa una mejora significativa. Además, el adjusted R squared es prácticamente igual que cuando la variable no había sido añadida.
 
+### Bloque 9
+
+#### Apartado 1
+train test
+
+```{r}
+set.seed(123)
+
+n_total <- nrow(datos_limpios)
+indices_train <- sample(1:n_total, size = round(0.70 * n_total))
+
+datos_train <- datos_limpios[indices_train, ]
+datos_test  <- datos_limpios[-indices_train, ]
+
+cat("Filas entrenamiento (70%):", nrow(datos_train), "\n")
+cat("Filas prueba (30%):", nrow(datos_test), "\n")
+```
+
+
+
+
+
+
 
 
 
