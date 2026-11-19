@@ -5,6 +5,7 @@ editor: visual
 ---
 
 ```{r}
+
 #Bloque 1
 
 #Ejercicio 1, calcular media, mediana y desviación típica
@@ -470,7 +471,7 @@ datos_limpios %>%
 ```
 
 ```{r}
-modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes +faltas, data = datos_limpios) 
+modelo_bloque5 <- lm(nota ~ horas_estudio + IQ + uso_redes + faltas, data = datos_limpios) 
 summary(modelo_bloque5)
 ```
 
@@ -770,4 +771,78 @@ plot(pred_interaccion) +
   theme_minimal()
 ```
 
-Apartado 4 --\> interpretación #Bloque 8
+Apartado 4 --\> interpretación #Bloque 7
+
+### Bloque 8
+
+#### Apartado 1
+
+```{r}
+sexos <- as.data.frame(
+  model.matrix(~ sexo - 1, data = datos_limpios)
+)
+
+datos_dummy <- cbind(
+  dplyr::select(datos_limpios, -sexo),
+  sexos
+)
+
+head(datos_dummy)
+
+modelo_nota_sexoHombre <- lm(nota ~ sexoMujer + sexoOtro , data = datos_dummy)
+modelo_nota_sexoMujer <- lm(nota ~ sexoHombre + sexoOtro, data = datos_dummy)
+modelo_nota_sexoOtro <- lm(nota ~ sexoHombre + sexoMujer, data = datos_dummy)
+
+
+summary(modelo_nota_sexoMujer)
+summary(modelo_nota_sexoHombre)
+summary(modelo_nota_sexoOtro)
+
+
+mean(datos_limpios$nota)
+
+
+```
+Vemos por los resultados en consola, que la media de Mujer es 5.327, la media de hombre es 5.275, y la de Otro es 5.610, que son los interceptos beta_0. La media del conjunto total es 5.316. Las mujeres se encuentran más cerca de este valor, por tanto las usaremos como referencia en el siguiente apartado
+
+#### Apartado 2
+
+```{r}
+modelo_nota_sexoMujer_estudio_clases <- lm(nota ~ sexoHombre + sexoOtro + horas_estudio + clases_asistidas, data = datos_dummy)
+summary(modelo_nota_sexoMujer_estudio_clases)
+```
+La variable clases_asistidas apenas cambia el resultado, el p valor es 0.07 y el coeficiente es bastante pequeño. Los coeficientes del estimate de Hombre y Otro disminuyen en comparación con el modelo anterior. En general (viendo partes anteriores de nuestro estudio), vemos que gran parte del efecto es causado por la variable horas_estudio, que absorbe parte del efecto. En contraste, clases_asistidas tiene un impacto menor. La diferencia entre hombres, mujeres y otro siguen siendo muy poco significativos cuando introducimos esta variable en el modelo.
+
+#### Apartado 3
+```{r}
+campus <- as.data.frame(
+  model.matrix(~ campus - 1, data = datos_limpios)
+)
+datos_dummy_campus <- cbind(
+  dplyr::select(datos_limpios, -campus),
+  campus
+)
+
+head(datos_dummy_campus)
+
+modelo_dummy_campus <- lm(nota ~ campusAranjuez, data = datos_dummy_campus)
+summary(modelo_dummy_campus)
+```
+El p valor es altísimo. Básicamente, no hay ningún tipo de evidencia para verificar si hay una diferencia significativa entre las notas de los alumnos de ambos campus.
+
+#### Apartado 4
+```{r}
+modelo_bloque5_beca <- lm(nota ~ horas_estudio + IQ + uso_redes + faltas + beca, data = datos_limpios) 
+summary(modelo_bloque5_beca)
+
+ggplot(datos_limpios, aes(x = beca, y = nota)) +
+  geom_point()
+
+
+
+```
+Hemos metido la variable beca en nuestro mejor modelo hasta el momento, y aparentemente, con un p valor de 0.237, y un Estimate de 0.117, deducimos que realmente esta variable no causa una mejora significativa. Además, el adjusted R squared es prácticamente igual que cuando la variable no había sido añadida.
+
+
+
+
