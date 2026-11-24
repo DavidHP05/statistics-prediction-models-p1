@@ -846,7 +846,7 @@ Hemos metido la variable beca en nuestro mejor modelo hasta el momento, y aparen
 ### Bloque 9
 
 #### Apartado 1
-train test
+train test 70 30
 
 ```{r}
 set.seed(123)
@@ -862,10 +862,84 @@ cat("Filas prueba (30%):", nrow(datos_test), "\n")
 ```
 
 
+#### Apartado 2
+
+```{r}
+modelo_simple_bloque9 <- lm(nota ~ horas_estudio, data = datos_train)
+
+modelo_multiple_cuad_bloque9 <- lm(nota ~ horas_estudio + I(horas_estudio^2) + horas_sueno + I(horas_sueno^2) + IQ + uso_redes + faltas, data = datos_train)
+
+# Resúmenes y criterios de información (AIC y BIC) sobre entrenamiento
+summary(modelo_simple_bloque9)
+summary(modelo_multiple_cuad_bloque9)
+
+# Comparación mediante AIC y BIC (valores más bajos indican mejor equilibrio ajuste-complejidad)
+AIC(modelo_simple_bloque9, modelo_multiple_cuad_bloque9)
+BIC(modelo_simple_bloque9, modelo_multiple_cuad_bloque9)
+```
+
+#### Apartado 3
+
+```{r}
+# Generar predicciones sobre el conjunto de prueba (30%)
+pred_simple   <- predict(modelo_simple_bloque9, newdata = datos_test)
+pred_multiple <- predict(modelo_multiple_cuad_bloque9, newdata = datos_test)
+
+# Valores reales de nota en prueba
+real_test <- datos_test$nota
+
+# Cálculo de RMSE (Root Mean Squared Error)
+rmse_simple   <- sqrt(mean((real_test - pred_simple)^2))
+rmse_multiple <- sqrt(mean((real_test - pred_multiple)^2))
+
+# Cálculo de MAE (Mean Absolute Error)
+mae_simple   <- mean(abs(real_test - pred_simple))
+mae_multiple <- mean(abs(real_test - pred_multiple))
+
+# Tabla comparativa de resultados
+comparacion_modelos <- data.frame(
+  Modelo = c("Lineal Simple", "Múltiple con Cuadráticos"),
+  RMSE   = round(c(rmse_simple, rmse_multiple), 4),
+  MAE    = round(c(mae_simple, mae_multiple), 4),
+  AIC    = round(c(AIC(modelo_simple_bloque9), AIC(modelo_multiple_cuad_bloque9)), 2),
+  BIC    = round(c(BIC(modelo_simple_bloque9), BIC(modelo_multiple_cuad_bloque9)), 2)
+)
+
+print(comparacion_modelos)
+```
+
+### Bloque 10
+# Apartado 1
+
+Elegimos la variable notas como variable respuesta. Como ya hemos visto previamente, la variable horas_estudio tiene una correlación lineal alta con notas, y por lo tanto la escogemos para el ajuste lineal. introducimos también IQ, uso_redes, ansiedad. Es igual que el modelo del bloque 5, pero quitando ingresos familiares, ya que no aportaba mucho al modelo. También incluimos horas_sueno. También quitamos ansiedad, por el mismo motivo. Curso no parece aportar nada.
 
 
 
+```{r}
+modeloInicial <- lm(nota ~ horas_estudio + IQ + uso_redes + horas_sueno, data = datos_limpios);
 
+summary(modeloInicial)
 
+ggplot(datos_limpios, aes(x = horas_estudio, y = nota)) +
+  geom_point()
 
+ggplot(datos_limpios, aes(x = IQ, y = nota)) +
+  geom_point()
+
+ggplot(datos_limpios, aes(x = uso_redes, y = nota)) +
+  geom_point()
+
+ggplot(datos_limpios, aes(x = horas_sueno, y = nota)) +
+  geom_point()
+
+ggplot(datos_limpios, aes(x = clases_asistidas, y = nota)) +
+  geom_point()
+
+ggplot(datos_limpios, aes(x = ansiedad, y = nota)) +
+  geom_point()
+
+ggplot(datos_limpios, aes(x = ingresos_familiares, y = nota)) +
+  geom_point()
+
+```
 
