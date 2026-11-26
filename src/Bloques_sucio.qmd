@@ -271,7 +271,7 @@ summary(modelo_completo)
 
 (Revisar seguramente este recogido a estas alturas trabajo parcial en horas asistidas correlacion 0,5 entre ambas además)
 
-Bloque 4
+##Bloque 4
 
 ```{r}
 
@@ -941,5 +941,17 @@ ggplot(datos_limpios, aes(x = ansiedad, y = nota)) +
 ggplot(datos_limpios, aes(x = ingresos_familiares, y = nota)) +
   geom_point()
 
+```
+
+Apartado 2
+```{r}
+modeloBloque10 <- lm(nota ~ poly(horas_estudio, 2, raw = TRUE) + IQ + uso_redes + horas_sueno+trabajo_parcial+faltas , data = datos_limpios);
+summary(modeloBloque10)
+```
+
+
+```{r}
+modeloBloque10 <- lm(nota ~ poly(horas_estudio, 2, raw = TRUE) + IQ +  I(ifelse(uso_redes > 3, 1, 0)) + horas_sueno+faltas+horas_sueno*IQ , data = datos_limpios);
+summary(modeloBloque10)
 ```
 
